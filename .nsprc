@@ -1,0 +1,22 @@
+{
+  "GHSA-gv7w-rqvm-qjhr": {
+    "active": true,
+    "notes": ,
+    "expiry": "2026-09-01"
+  },
+  "GHSA-g7r4-m6w7-qqqr": {
+    "active": true,
+    "notes": ,
+    "expiry": "2026-09-01"
+  },
+  "GHSA-fx2h-pf6j-xcff": {
+    "active": true,
+    "notes": ,
+    "expiry": "2026-09-01"
+  },
+  "GHSA-v6wh-96g9-6wx3": {
+    "active": true,
+    "notes": "launch-editor: NTLMv2 hash disclosure via UNC path handling on Windows, reached transitively via vite's dev-server error overlay. Dev-only (never invoked in a prod build) and Windows-specific. Re-evaluate when vite bumps launch-editor; drop this exception then.",
+    "expiry": "2026-09-01"
+  }
+}
