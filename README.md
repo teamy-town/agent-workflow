@@ -265,6 +265,18 @@ Workflow itself ships **zero agent strategies and zero skills** — bring your o
 
 ---
 
+## Self-hosted Zibby (single VM)
+
+Run the **full Zibby platform** — host platform + agents + marketplace — on your own box:
+
+```bash
+curl -fsSL https://dl.zibby.app/the host | bash
+```
+
+Requirements: Docker + ~8 GB RAM. The installer downloads the release bundle, `docker load`s the images locally (**no registry login needed**), generates secrets, brings the stack up, and prints your dashboard URL + access token. Free tier: up to 10 deployed agents.
+
+---
+
 ## Status
 
 `0.1.x`. The public protocol surface is stable and consumed by Zibby Studio + tooling:
