@@ -1,5 +1,10 @@
 /**
- * A NODE RUNS ITS OWN MODEL — never another node's when the node's own saved
+ * A NODE RUNS ITS OWN MODEL — never another node's: there is no default
+ * model, per run or per agent.
+ *
+ * The engine used to end its model chain at the run's MODEL env, which the
+ * host platform filled with the FIRST node pin it found, and pick the vendor
+ * from the run's agentType (another node's vendor) when the node's own saved
  * vendor rode only its per-run node config. Both are gone:
  *   - a node's saved vendor (_currentNodeConfig.agent) selects its strategy;
  *   - nothing chosen for the node → NODE_MODEL_UNSET, never a borrowed model

@@ -201,7 +201,7 @@ describe('exec-context — withRootContext', () => {
 // ── WHICH NODE THIS RUN IS ON ────────────────────────────────────────────────
 // `parentExecutionId` says WHICH RUN started a child; `nodeId` says WHICH LINE
 // it went out on. Without it, a graph that starts the same member from two
-// nodes (team → Product Owner, from "Hand off the PRD" AND from "Project
+// nodes (a manager → the same member, from "Hand off the PRD" AND from "Project
 // Manager") cannot tell which of the two tiles a run belongs to — one run lit
 // both. The engine publishes it around every node's
 // execute(); dispatchSubgraph reads it and the backend records it as

@@ -1,7 +1,7 @@
 /**
  * THE EFFORT CEILING — a spend guardrail, not a preference.
  *
- * two members ran at the highest effort because the
+ * Seen: two members ran at the highest effort because the
  * manager's prompt said so. A prompt is not a spend cap. The ceiling is a
  * per-agent setting the person owns (the platform stamps it on every run as
  * `EFFORT_CEILING`, or hands it to an in-process child at begin); the engine

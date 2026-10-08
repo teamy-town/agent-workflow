@@ -1,8 +1,8 @@
 /**
  * The run's deadline as a fact the agent can read.
  *
- * Live developer a run was stopped at its 60-minute limit
- * mid-investigation and QA a run at the 25-minute default; neither was
+ * Seen: one run was stopped at its 60-minute limit mid-investigation
+ * and another at the 25-minute default; neither was
  * ever told when its run ends. A/B: before this change nothing in any prompt
  * named the end of the run (run-deadline.ts did not exist and invokeAgent
  * appended no such sentence) — the invokeAgent case below fails on the old code.

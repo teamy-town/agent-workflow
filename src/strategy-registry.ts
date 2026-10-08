@@ -79,7 +79,8 @@ export function listStrategies() {
  * ⛔ THERE IS NO RUN-WIDE FALLBACK. The chain used to end in `MODEL` env — the
  * host platform stamped the FIRST node pin it found (sorted by node name) on
  * the whole run, so every node with no pick of its own silently ran on a
- * sibling's model and that sibling's vendor key. A node's model now
+ * sibling's model and that sibling's vendor key. There is no default model,
+ * per run or per agent: a node's model now
  * comes only from that node; null means nobody chose one, and invokeAgent
  * refuses (`NODE_MODEL_UNSET`) rather than let the vendor substitute its own
  * default (the o4-mini case was that substitution).
@@ -263,7 +264,7 @@ export function resolveInvocationExtras({ options = {}, stateView = {}, context 
     // Ad-hoc per-agent remote MCP servers (row instance data — like skills, NOT
     // a registered skill). The executor resolves the workflow row's customMcp
     // into [{serverName, def}] and puts it on state; strategies merge it into
-    // their mcpServers map after registry skills. See 
+    // their mcpServers map after registry skills.
     extraMcpServers: options.extraMcpServers || stateView.extraMcpServers || context.extraMcpServers || [],
     // Native agent plugins (mirrors `skills`). Passed through to the strategy,
     // which loads the bundle in its own native way (strategy.loadsPlugins);

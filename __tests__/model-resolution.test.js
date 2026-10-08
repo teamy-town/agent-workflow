@@ -6,7 +6,7 @@
 // the codex strategy silently substituted its hardcoded vendor default.
 //
 // That case was fixed by reading the run's MODEL env at the bottom of the
-// chain — which then became the bug the owner caught on MODEL was
+// chain — which then became the next bug: MODEL was
 // ONE node's pick stamped on the whole run, so every node with no pick of its
 // own silently ran on a sibling's model. The host platform now ships each
 // node's own model on its node config, and the chain has no run-wide floor.
