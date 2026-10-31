@@ -1870,9 +1870,10 @@ export class WorkflowGraph {
           ? await resolveChatAttachments(chatTurn.attachments, internalAbortController.signal) : null;
         const fileBlock = attachmentFiles?.files.length
           ? `\nAttached files (read these local files to inspect their contents):\n${attachmentFiles.files.map((file) => `- ${file.name}: ${file.path}`).join('\n')}` : '';
+        const hostNote = attachmentFiles?.note ? `\n${attachmentFiles.note}` : '';
         const lessonsBlock = await lessonsBlockForNode();
         const nodePrompt = lessonsBlock ? `${prompt}\n\n${lessonsBlock}` : prompt;
-        const strategyPromise = rawInvokeAgent(isChatCall ? `${nodePrompt}\n${renderChatTurn(chatTurn as any)}${fileBlock}` : nodePrompt, ctx, {
+        const strategyPromise = rawInvokeAgent(isChatCall ? `${nodePrompt}\n${renderChatTurn(chatTurn as any)}${fileBlock}${hostNote}` : nodePrompt, ctx, {
           ...skillInvokeOpts,    // skill defaults (e.g. session)
           ...declaredInvokeOpts,  // the node's own declarations (compactAtTokens, helpers)
           ...opts,                // caller-explicit overrides
