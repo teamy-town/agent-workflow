@@ -20,11 +20,13 @@
  */
 import type { ChatAttachment } from './chat-entry.js';
 
-export interface ChatAttachmentImage { path: string; mimeType: string; name: string }
-export interface ChatAttachmentFile { path: string; name: string }
+export interface ChatAttachmentImage { id?: string; path: string; mimeType: string; name: string }
+export interface ChatAttachmentFile { id?: string; path: string; name: string }
 export interface ResolvedChatAttachments {
   images: ChatAttachmentImage[];
   files: ChatAttachmentFile[];
+  /** The host's own facts about these files (how another run opens them, which could not be opened). Goes in the prompt as written. */
+  note?: string;
   cleanup: () => void;
 }
 export type ChatAttachmentResolver = (
@@ -64,6 +66,7 @@ export async function resolveChatAttachments(
   return {
     images: Array.isArray(result?.images) ? result.images : [],
     files: Array.isArray(result?.files) ? result.files : [],
+    note: typeof result?.note === 'string' ? result.note : '',
     cleanup: typeof result?.cleanup === 'function' ? () => result.cleanup() : () => {},
   };
 }

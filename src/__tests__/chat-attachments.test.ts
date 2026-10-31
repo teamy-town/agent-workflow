@@ -70,6 +70,16 @@ describe('the host reader seam', () => {
     expect(cleanup).toHaveBeenCalledTimes(1);
   });
 
+  it('the host\'s own facts about the files reach the chat prompt as written', async () => {
+    registerChatAttachmentResolver(async () => ({
+      images: [{ path: '/tmp/a/0.png', mimeType: 'image/png', name: 'screen.png' }], files: [],
+      note: 'Stored reference of each attached file:\n- screen.png: file-7', cleanup() {},
+    }));
+    const calls: any[] = [];
+    await chatGraph(vi.fn(async (prompt) => { calls.push(prompt); return 'seen'; })).run({}, { chat: { message: 'see attached', attachments: [ref] } });
+    expect(calls[0]).toContain('- screen.png: file-7');
+  });
+
   it('refuses a turn with attachments when the host registered no reader — before any model call', async () => {
     expect(getChatAttachmentResolver()).toBeNull();
     const invokeAgent = vi.fn();
