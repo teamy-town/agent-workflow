@@ -1,7 +1,7 @@
 # @zibby/agent-workflow — 日本語
 
 [![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
-[![CI](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml)
+[![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
 [![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-各エージェントは自身の認証情報の環境変数（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）を読み取ります。**Zibby Cloud** では、それらをワークフローごとに設定できます — パイプラインごとに異なるキー、グローバルな状態なし — [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars) を参照してください。ノードごとの `model` のオーバーライドは `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`）から取得され、CLI がデプロイバンドルの一部としてクラウドへ送出します。
+各エージェントは自身の認証情報の環境変数（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）を読み取ります。**Teamy Cloud** では、それらをワークフローごとに設定できます — パイプラインごとに異なるキー、グローバルな状態なし — [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars) を参照してください。ノードごとの `model` のオーバーライドは `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`）から取得され、CLI がデプロイバンドルの一部としてクラウドへ送出します。
 
 ---
 
@@ -48,7 +48,7 @@ npx @zibby/cli agent new my-pipeline
 # 2. Run it locally — names are folder names, not cloud identifiers
 npx @zibby/cli agent start my-pipeline
 
-# 3. Ship it to Zibby Cloud (returns a UUID + caches it in .zibby-deploy.json)
+# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
 npx @zibby/cli login
 npx @zibby/cli agent deploy my-pipeline
 
@@ -79,7 +79,7 @@ zibby --help
 | `zibby agent new <name>` | `.zibby/workflows/<name>/` の下に新しいカスタムワークフローを**生成**します。`.zibby/` がなければ自動作成します — 別途の init 手順は不要です。 |
 | `zibby agent start <name>` | ワークフローをホットリロード付きで**ローカル**実行します（デフォルトでポート 3848）。Name = `.zibby/workflows/` の下のフォルダ。 |
 | `zibby login` / `logout` / `status` | クラウド認証。 |
-| `zibby agent deploy [name]` | ワークフローを Zibby Cloud に**デプロイ**します（name を省略すると対話的ピッカー）。 |
+| `zibby agent deploy [name]` | ワークフローを Teamy Cloud に**デプロイ**します（name を省略すると対話的ピッカー）。 |
 | `zibby agent trigger <uuid>` | デプロイ済みワークフローをクラウドで**実行**します。UUID が正準です（名前はローカル限定）。UUID は `agent list` または `deploy` の出力から取得します。 |
 | `zibby agent logs [jobId] -t` | 実行の**ログ**を Heroku 風に tail します。`-t` でライブに追従します。 |
 | `zibby agent list` | ローカル + デプロイ済みのワークフローを**一覧表示**します。 |
@@ -267,7 +267,7 @@ Workflow 自体は**ゼロのエージェントストラテジーとゼロのス
 
 ## ステータス
 
-`0.1.x`。公開プロトコルの表面は安定しており、Zibby Studio + ツール群によって消費されています:
+`0.1.x`。公開プロトコルの表面は安定しており、Teamy Studio + ツール群によって消費されています:
 
 - `WORKFLOW_GRAPH_LOG_MARKER_PREFIX`（`__WORKFLOW_GRAPH_LOG__`）
 - `STUDIO_STOP_REQUEST_FILE`（`.zibby-studio-stop`）

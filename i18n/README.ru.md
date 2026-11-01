@@ -1,7 +1,7 @@
 # @zibby/agent-workflow — Русский
 
 [![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
-[![CI](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml)
+[![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
 [![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-Каждый агент читает собственную переменную окружения с учётными данными (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). В **Zibby Cloud** их можно задавать для каждого рабочего процесса — разные ключи для разных конвейеров, без глобального состояния — см. [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Переопределения `model` для отдельных узлов берутся из `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), который CLI отправляет в облако в составе пакета развёртывания.
+Каждый агент читает собственную переменную окружения с учётными данными (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). В **Teamy Cloud** их можно задавать для каждого рабочего процесса — разные ключи для разных конвейеров, без глобального состояния — см. [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Переопределения `model` для отдельных узлов берутся из `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), который CLI отправляет в облако в составе пакета развёртывания.
 
 ---
 
@@ -48,7 +48,7 @@ npx @zibby/cli agent new my-pipeline
 # 2. Run it locally — names are folder names, not cloud identifiers
 npx @zibby/cli agent start my-pipeline
 
-# 3. Ship it to Zibby Cloud (returns a UUID + caches it in .zibby-deploy.json)
+# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
 npx @zibby/cli login
 npx @zibby/cli agent deploy my-pipeline
 
@@ -79,7 +79,7 @@ zibby --help
 | `zibby agent new <name>` | **Генерирует** новый пользовательский рабочий процесс в `.zibby/workflows/<name>/`. Автоматически создаёт `.zibby/`, если он отсутствует, — отдельный шаг инициализации не требуется. |
 | `zibby agent start <name>` | Запускает рабочий процесс **локально** с горячей перезагрузкой (по умолчанию порт 3848). Имя = папка внутри `.zibby/workflows/`. |
 | `zibby login` / `logout` / `status` | Облачная аутентификация. |
-| `zibby agent deploy [name]` | **Развёртывает** рабочий процесс в Zibby Cloud (интерактивный выбор, если имя опущено). |
+| `zibby agent deploy [name]` | **Развёртывает** рабочий процесс в Teamy Cloud (интерактивный выбор, если имя опущено). |
 | `zibby agent trigger <uuid>` | **Запускает** развёрнутый рабочий процесс в облаке. UUID каноничен (имена существуют только локально). Получайте UUID из `agent list` или из вывода `deploy`. |
 | `zibby agent logs [jobId] -t` | Выводит **логи** запуска в стиле Heroku. `-t` — следить в реальном времени. |
 | `zibby agent list` | **Список** локальных и развёрнутых рабочих процессов. |
@@ -267,7 +267,7 @@ node index.js
 
 ## Статус
 
-`0.1.x`. Публичная поверхность протокола стабильна и потребляется Zibby Studio + инструментами:
+`0.1.x`. Публичная поверхность протокола стабильна и потребляется Teamy Studio + инструментами:
 
 - `WORKFLOW_GRAPH_LOG_MARKER_PREFIX` (`__WORKFLOW_GRAPH_LOG__`)
 - `STUDIO_STOP_REQUEST_FILE` (`.zibby-studio-stop`)

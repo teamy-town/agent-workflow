@@ -1,7 +1,7 @@
 # @zibby/agent-workflow — 中文
 
 [![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
-[![CI](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml)
+[![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
 [![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-每个代理读取自己的凭证环境变量（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）。在 **Zibby Cloud** 中，你可以按工作流分别设置这些变量——每条流水线使用不同的密钥，没有全局状态——参见 [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars)。各节点的 `model` 覆盖来自 `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`），CLI 会将其作为部署包的一部分发送到云端。
+每个代理读取自己的凭证环境变量（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）。在 **Teamy Cloud** 中，你可以按工作流分别设置这些变量——每条流水线使用不同的密钥，没有全局状态——参见 [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars)。各节点的 `model` 覆盖来自 `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`），CLI 会将其作为部署包的一部分发送到云端。
 
 ---
 
@@ -48,7 +48,7 @@ npx @zibby/cli agent new my-pipeline
 # 2. Run it locally — names are folder names, not cloud identifiers
 npx @zibby/cli agent start my-pipeline
 
-# 3. Ship it to Zibby Cloud (returns a UUID + caches it in .zibby-deploy.json)
+# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
 npx @zibby/cli login
 npx @zibby/cli agent deploy my-pipeline
 
@@ -79,7 +79,7 @@ zibby --help
 | `zibby agent new <name>` | 在 `.zibby/workflows/<name>/` 下**生成**一个新的自定义工作流。如果 `.zibby/` 不存在则自动创建——无需单独的初始化步骤。 |
 | `zibby agent start <name>` | 以热重载方式**本地**运行工作流（默认端口 3848）。名称 = `.zibby/workflows/` 下的文件夹。 |
 | `zibby login` / `logout` / `status` | 云端认证。 |
-| `zibby agent deploy [name]` | 将工作流**部署**到 Zibby Cloud（省略名称时进入交互式选择器）。 |
+| `zibby agent deploy [name]` | 将工作流**部署**到 Teamy Cloud（省略名称时进入交互式选择器）。 |
 | `zibby agent trigger <uuid>` | 在云端**运行**已部署的工作流。UUID 是规范标识（名称仅限本地）。可从 `agent list` 或 `deploy` 的输出中获取 UUID。 |
 | `zibby agent logs [jobId] -t` | 以 Heroku 风格输出某次运行的**日志**。`-t` 表示实时跟随。 |
 | `zibby agent list` | **列出**本地 + 已部署的工作流。 |
@@ -267,7 +267,7 @@ workflow 本身**不附带任何代理策略，也不附带任何技能**——�
 
 ## 状态
 
-`0.1.x`。公开的协议表面是稳定的，并被 Zibby Studio + 工具链消费：
+`0.1.x`。公开的协议表面是稳定的，并被 Teamy Studio + 工具链消费：
 
 - `WORKFLOW_GRAPH_LOG_MARKER_PREFIX`（`__WORKFLOW_GRAPH_LOG__`）
 - `STUDIO_STOP_REQUEST_FILE`（`.zibby-studio-stop`）

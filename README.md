@@ -1,7 +1,7 @@
 # @zibby/agent-workflow
 
 [![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
-[![CI](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml)
+[![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
 [![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-Each agent reads its own credential env var (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Zibby Cloud** you can set those per-workflow — different keys per pipeline, no global state — see [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Each node runs on the model the run config names for it (`config: { models: { node_id: 'claude-opus-4.6', default: '…' } }`); a node never borrows another node's model.
+Each agent reads its own credential env var (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Teamy Cloud** you can set those per-workflow — different keys per pipeline, no global state — see [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Each node runs on the model the run config names for it (`config: { models: { node_id: 'claude-opus-4.6', default: '…' } }`); a node never borrows another node's model.
 
 ---
 
@@ -93,9 +93,9 @@ See [`examples/`](./examples/) for runnable demos of each pattern.
 
 ---
 
-## 🚀 Self-hosted Zibby (single VM)
+## 🚀 Self-hosted Teamy (single VM)
 
-Run the **full Zibby platform** — host platform + agents + marketplace — on your own box:
+Run the **full Teamy platform** — host platform + agents + marketplace — on your own box:
 
 ```bash
 curl -fsSL https://dl.zibby.app/the host | bash
@@ -279,7 +279,7 @@ Workflow itself ships **zero agent strategies and zero skills** — bring your o
 
 ## Status
 
-`0.1.x`. The public protocol surface is stable and consumed by Zibby Studio + tooling:
+`0.1.x`. The public protocol surface is stable and consumed by Teamy Studio + tooling:
 
 - `WORKFLOW_GRAPH_LOG_MARKER_PREFIX` (`__WORKFLOW_GRAPH_LOG__`)
 - `STUDIO_STOP_REQUEST_FILE` (`.zibby-studio-stop`)
