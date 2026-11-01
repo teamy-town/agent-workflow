@@ -1,7 +1,7 @@
 # @zibby/agent-workflow — 한국어
 
 [![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
-[![CI](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml)
+[![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
 [![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-각 에이전트는 자신의 자격 증명 환경 변수(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`)를 읽습니다. **Zibby Cloud**에서는 이들을 워크플로별로 설정할 수 있습니다 — 파이프라인마다 다른 키, 전역 상태 없음 — [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars)를 참고하세요. 노드별 `model` 재정의는 `.zibby.config.mjs`(`models: { node_id: 'claude-opus-4.6' }`)에서 가져오며, CLI가 배포 번들의 일부로 클라우드에 전달합니다.
+각 에이전트는 자신의 자격 증명 환경 변수(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`)를 읽습니다. **Teamy Cloud**에서는 이들을 워크플로별로 설정할 수 있습니다 — 파이프라인마다 다른 키, 전역 상태 없음 — [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars)를 참고하세요. 노드별 `model` 재정의는 `.zibby.config.mjs`(`models: { node_id: 'claude-opus-4.6' }`)에서 가져오며, CLI가 배포 번들의 일부로 클라우드에 전달합니다.
 
 ---
 
@@ -48,7 +48,7 @@ npx @zibby/cli agent new my-pipeline
 # 2. Run it locally — names are folder names, not cloud identifiers
 npx @zibby/cli agent start my-pipeline
 
-# 3. Ship it to Zibby Cloud (returns a UUID + caches it in .zibby-deploy.json)
+# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
 npx @zibby/cli login
 npx @zibby/cli agent deploy my-pipeline
 
@@ -79,7 +79,7 @@ zibby --help
 | `zibby agent new <name>` | `.zibby/workflows/<name>/` 아래에 새 커스텀 워크플로를 **생성**합니다. `.zibby/`가 없으면 자동 생성합니다 — 별도의 init 단계가 필요 없습니다. |
 | `zibby agent start <name>` | 워크플로를 핫 리로드와 함께 **로컬**로 실행합니다(기본 포트 3848). Name = `.zibby/workflows/` 아래의 폴더. |
 | `zibby login` / `logout` / `status` | 클라우드 인증. |
-| `zibby agent deploy [name]` | 워크플로를 Zibby Cloud에 **배포**합니다(name을 생략하면 대화형 선택기). |
+| `zibby agent deploy [name]` | 워크플로를 Teamy Cloud에 **배포**합니다(name을 생략하면 대화형 선택기). |
 | `zibby agent trigger <uuid>` | 배포된 워크플로를 클라우드에서 **실행**합니다. UUID가 표준입니다(이름은 로컬 전용). UUID는 `agent list` 또는 `deploy` 출력에서 얻습니다. |
 | `zibby agent logs [jobId] -t` | 실행의 **로그**를 Heroku 방식으로 tail합니다. `-t`로 라이브 추적합니다. |
 | `zibby agent list` | 로컬 + 배포된 워크플로를 **나열**합니다. |
@@ -267,7 +267,7 @@ Workflow 자체는 **제로 에이전트 스트래티지와 제로 스킬**을 �
 
 ## 상태
 
-`0.1.x`. 공개 프로토콜 표면은 안정적이며 Zibby Studio + 도구에 의해 소비됩니다:
+`0.1.x`. 공개 프로토콜 표면은 안정적이며 Teamy Studio + 도구에 의해 소비됩니다:
 
 - `WORKFLOW_GRAPH_LOG_MARKER_PREFIX`(`__WORKFLOW_GRAPH_LOG__`)
 - `STUDIO_STOP_REQUEST_FILE`(`.zibby-studio-stop`)

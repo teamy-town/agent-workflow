@@ -1,7 +1,7 @@
 # @zibby/agent-workflow — Deutsch
 
 [![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
-[![CI](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/ZibbyDev/agent-workflow/actions/workflows/ci.yml)
+[![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
 [![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-Jeder Agent liest seine eigene Credential-Umgebungsvariable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Zibby Cloud** kannst du diese pro Workflow setzen — unterschiedliche Keys pro Pipeline, kein globaler State — siehe [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Per-Node-`model`-Overrides kommen aus `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), das die CLI als Teil des Deploy-Bundles in die Cloud mitliefert.
+Jeder Agent liest seine eigene Credential-Umgebungsvariable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Teamy Cloud** kannst du diese pro Workflow setzen — unterschiedliche Keys pro Pipeline, kein globaler State — siehe [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Per-Node-`model`-Overrides kommen aus `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), das die CLI als Teil des Deploy-Bundles in die Cloud mitliefert.
 
 ---
 
@@ -48,7 +48,7 @@ npx @zibby/cli agent new my-pipeline
 # 2. Run it locally — names are folder names, not cloud identifiers
 npx @zibby/cli agent start my-pipeline
 
-# 3. Ship it to Zibby Cloud (returns a UUID + caches it in .zibby-deploy.json)
+# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
 npx @zibby/cli login
 npx @zibby/cli agent deploy my-pipeline
 
@@ -79,7 +79,7 @@ Alle Workflow-Operationen liegen aus Konsistenzgründen unter `zibby agent <verb
 | `zibby agent new <name>` | **Generiert** einen neuen benutzerdefinierten Workflow unter `.zibby/workflows/<name>/`. Legt `.zibby/` automatisch an, falls es fehlt — kein separater Init-Schritt erforderlich. |
 | `zibby agent start <name>` | Führt einen Workflow **lokal** mit Hot-Reload aus (Standard-Port 3848). Name = Ordner unter `.zibby/workflows/`. |
 | `zibby login` / `logout` / `status` | Cloud-Authentifizierung. |
-| `zibby agent deploy [name]` | **Deployt** einen Workflow in die Zibby Cloud (interaktive Auswahl, wenn der Name weggelassen wird). |
+| `zibby agent deploy [name]` | **Deployt** einen Workflow in die Teamy Cloud (interaktive Auswahl, wenn der Name weggelassen wird). |
 | `zibby agent trigger <uuid>` | **Führt** einen deployten Workflow in der Cloud aus. Die UUID ist kanonisch (Namen sind nur lokal). UUIDs bekommst du über `agent list` oder die Ausgabe von `deploy`. |
 | `zibby agent logs [jobId] -t` | Verfolgt **Logs** eines Laufs, Heroku-Stil. `-t`, um live zu folgen. |
 | `zibby agent list` | **Listet** lokale + deployte Workflows. |
@@ -267,7 +267,7 @@ Workflow selbst liefert **null Agenten-Strategien und null Skills** — bring de
 
 ## Status
 
-`0.1.x`. Die öffentliche Protokoll-Oberfläche ist stabil und wird von Zibby Studio + Tooling konsumiert:
+`0.1.x`. Die öffentliche Protokoll-Oberfläche ist stabil und wird von Teamy Studio + Tooling konsumiert:
 
 - `WORKFLOW_GRAPH_LOG_MARKER_PREFIX` (`__WORKFLOW_GRAPH_LOG__`)
 - `STUDIO_STOP_REQUEST_FILE` (`.zibby-studio-stop`)
