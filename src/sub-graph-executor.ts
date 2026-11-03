@@ -403,6 +403,12 @@ export async function dispatchSubgraph(workflowName, options: any = {}) {
     input: options.input || {},
     ...(options.executionChoice ? { executionChoice: options.executionChoice } : {}),
     ...(parentExecutionId ? { parentExecutionId } : {}),
+    // THIS PARENT WAITS for the child inside its own node (a sync dispatch on
+    // the HTTP door). The platform reads it, from a verified parent only, to
+    // decide who hears about the child if it goes wrong: a person, since a
+    // blocked parent cannot read its mailbox until released — the answer the
+    // in-process door already gives.
+    ...(parentExecutionId && !options.async ? { parentWaits: true } : {}),
     ...(proposedExecutionId ? { executionId: proposedExecutionId } : {}),
     ...(getDispatchNodeId() ? { dispatchNodeId: getDispatchNodeId() } : {}),
     ...(typeof options.output === 'string' && options.output.trim()
