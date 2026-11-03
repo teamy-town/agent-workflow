@@ -118,6 +118,10 @@ export const TRANSIENT_MESSAGE_PATTERNS: readonly RegExp[] = Object.freeze([
   /no chunks received/i,
   /stream ended without receiving any events/i,
   /stream completed without receiving/i,
+  // codex's own words when its model stream broke and its reconnects were
+  // spent (runs 512070ed, 7422113e, 2026-11-03: the platform's model gateway
+  // was restarting)
+  /stream disconnected before completion/i,
   // ── socket/DNS/TLS level ──
   /socket hang up/i,
   /premature close/i,

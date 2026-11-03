@@ -36,6 +36,8 @@ export { dispatchSubgraph, dispatchParticipant, listParticipants } from './sub-g
 // Child runs reach the platform over the HOST's transport (child-run-transport.ts).
 export { registerChildRunTransport, getChildRunTransport } from './child-run-transport.js';
 export type { ChildRunTransport, ChildRunConnection, ChildRunCall, ChildRunCallName, ChildRunConnectionKind, ChildRunResponse } from './child-run-transport.js';
+// The host's probe for "is the platform this run works through answering?" (platform-availability.ts).
+export { registerPlatformAvailability, getPlatformAvailability, waitForPlatform, PLATFORM_POLL_MS, PLATFORM_WAIT_MAX_MS } from './platform-availability.js';
 export { isNotSetUp, SUBGRAPH_NOT_SET_UP } from './not-set-up.js';
 export { currentRunEffort, currentEffortCeiling } from './exec-context.js';
 export { runCollaboration, remainingWorkflowTimeMs } from './collaboration.js';
