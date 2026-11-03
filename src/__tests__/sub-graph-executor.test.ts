@@ -422,6 +422,8 @@ describe('dispatchSubgraph — auth + context propagation (LangGraph #5700 regre
     await dispatchSubgraph('child', { pollIntervalMs: 1 });
     const syncBody = JSON.parse(syncFetch.mock.calls[0][1].body);
     expect(syncBody.parentExecutionId).toBe('parent-exec-99');
+    // A sync dispatch says its parent waits for the child (the platform's supervision answer).
+    expect(syncBody.parentWaits).toBe(true);
 
     vi.unstubAllGlobals();
     const asyncFetch = vi.fn().mockResolvedValue(
@@ -432,6 +434,7 @@ describe('dispatchSubgraph — auth + context propagation (LangGraph #5700 regre
     await dispatchSubgraph('child', { async: true });
     const asyncBody = JSON.parse(asyncFetch.mock.calls[0][1].body);
     expect(asyncBody.parentExecutionId).toBe('parent-exec-99');
+    expect(asyncBody).not.toHaveProperty('parentWaits');
   });
 
   it('the host\'s connection check fires even on async dispatch (regression: don\'t skip the check on fast-path)', async () => {
