@@ -28,14 +28,18 @@
  *   • A person's Stop (the run's abort signal) is not this: it stops at once
  *     and never waits for the grace.
  *
- * The deadline is the one the platform already declares (run-deadline.ts
- * runDeadline: RUN_DEADLINE_AT / MAX_WORKFLOW_DURATION_MS). The process
- * backstops wait RUN_HARD_STOP_AFTER_DEADLINE_MS past it, so whatever this
- * module decides leaves the process before it is killed. No deadline declared
- * (local `zibby test`) → nothing here arms.
+ * The deadline here is the run's STOP (run-deadline.ts runStopAt): its time
+ * limit (RUN_DEADLINE_AT / MAX_WORKFLOW_DURATION_MS) plus the hand-over window.
+ * Reaching the limit stops nothing — the run is told to hand over (the inbox
+ * pump's notices) and loops start no new round (runPastLimit); only a run still
+ * going at its stop is stopped here (founder, 2026-11-03). The process
+ * backstops wait RUN_HARD_STOP_AFTER_DEADLINE_MS past the limit — the stop plus
+ * the grace and 30 s — so whatever this module decides leaves the process
+ * before it is killed. No deadline declared (local `zibby test`) → nothing here
+ * arms.
  */
 
-import { clockTime } from './run-deadline.js';
+import { clockTime, RUN_HANDOVER_WINDOW_MS } from './run-deadline.js';
 
 export interface DeadlineClock {
   /** Epoch ms of the deadline, or null when the run has none. */
@@ -82,7 +86,7 @@ export function startDeadlineClock(atMs: number | null, graceMs: number, now: ()
  * never billed twice.
  */
 export function deadlineError(atMs: number): Error {
-  const e: any = new Error(`The run reached its deadline (${clockTime(atMs)}); its model work is stopped (operation was aborted).`);
+  const e: any = new Error(`The run reached its stop time (${clockTime(atMs)}), past its time limit; its model work is stopped (operation was aborted).`);
   e.name = 'AbortError';
   e.code = 'RUN_DEADLINE';
   return e;
@@ -93,7 +97,7 @@ export function deadlineError(atMs: number): Error {
  * deadline is spent. Also an `AbortError` (a cancellation, never retried).
  */
 export function graceSpentError(atMs: number, graceMs: number): Error {
-  const e: any = new Error(`The run reached its deadline (${clockTime(atMs)}) and the ${Math.round(graceMs / 1000)} s after it for recording are spent; this step is stopped (operation was aborted).`);
+  const e: any = new Error(`The run reached its stop time (${clockTime(atMs)}), past its time limit, and the ${Math.round(graceMs / 1000)} s after it for recording are spent; this step is stopped (operation was aborted).`);
   e.name = 'AbortError';
   e.code = 'RUN_DEADLINE';
   return e;
@@ -165,9 +169,10 @@ export function deadlineStopFact(clock: DeadlineClock, facts: {
 export function deadlineStopSentence(clock: DeadlineClock, facts: {
   stoppedModelIn?: string | null; unfinished?: string | null; answeredBy?: string | null;
 }): string {
-  const at = clock.atMs !== null ? clockTime(clock.atMs) : 'its deadline';
+  const at = clock.atMs !== null ? clockTime(clock.atMs) : 'its stop time';
   const grace = `${Math.round(clock.graceMs / 1000)} s`;
-  const parts = [`Stopped at the run's deadline (${at}) — its run-time limit; it did not crash.`];
+  const parts = [`Stopped at ${at}, ${Math.round(RUN_HANDOVER_WINDOW_MS / 60_000)} minutes past its run-time limit: it was asked to hand back `
+    + 'what it had from the limit on and had not ended; it did not crash.'];
   if (facts.stoppedModelIn) parts.push(`The model in '${facts.stoppedModelIn}' was still working and was stopped.`);
   if (facts.unfinished && facts.answeredBy) {
     parts.push(`'${facts.answeredBy}' had already answered; '${facts.unfinished}', which records that answer, did not finish within `

@@ -123,7 +123,8 @@ export { registerStrategy, listStrategies, getAgentStrategy, prepareAgentStrateg
 
 // Repository rules — the rule files a repository's owner keeps in it, delivered
 // to every model node the same way whatever its vendor (repository-rules.ts).
-export { RUN_DEADLINE_ENV, RUN_LIMIT_MS_ENV, RUN_END_NOTICE_LEAD_MS, RUN_FINALIZE_GRACE_MS, RUN_HARD_STOP_AFTER_DEADLINE_MS, runDeadline, clockTime, runDeadlineSentence, runEndNotice, singleCommandCapMs } from './run-deadline.js';
+export { RUN_DEADLINE_ENV, RUN_LIMIT_MS_ENV, RUN_END_NOTICE_LEAD_MS, RUN_FINALIZE_GRACE_MS, RUN_HANDOVER_WINDOW_MS, RUN_OVER_LIMIT_NOTICE_OFFSETS_MS, RUN_HARD_STOP_AFTER_DEADLINE_MS, runDeadline, runStopAt, runPastLimit, clockTime, runDeadlineSentence, runTimeNotice, singleCommandCapMs } from './run-deadline.js';
+export type { RunTimeNotice } from './run-deadline.js';
 // The fact a run the deadline ended carries in its state (deadline-stop.ts).
 export { DEADLINE_STOP_KEY } from './deadline-stop.js';
 export type { DeadlineStopFact } from './deadline-stop.js';

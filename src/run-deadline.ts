@@ -1,14 +1,28 @@
 /**
- * THE RUN'S DEADLINE — when this run is stopped, as a clock time, and the few
+ * THE RUN'S DEADLINE — the run's time limit, as a clock time, and the few
  * facts derived from it that reach the agent.
+ *
+ * THE LIMIT DOES NOT STOP THE RUN (founder, 2026-11-03). Magnum designer runs
+ * 9d6b8743 and 0cfc4964 (ticket 930) were each stopped at their 25-minute limit
+ * while their reviewer was still working, and each retry restarted the step.
+ * Since then a run that reaches its limit is TOLD, through the same in-run door
+ * a manager's message takes (the inbox pump), that it is past its time and must
+ * hand over — at the limit and 5, 10 and 20 minutes after it, each notice firmer
+ * (`runTimeNotice`) — and a looping workflow starts no new round once it is past
+ * it (`runPastLimit`, read by the templates' own routes). Only a run that has
+ * still not ended RUN_HANDOVER_WINDOW_MS after the limit is stopped
+ * (`runStopAt`): the engine stops its model then (graph.ts, deadline-stop.ts),
+ * and the process backstops follow RUN_HARD_STOP_AFTER_DEADLINE_MS after the
+ * limit. That backstop stays because a run stuck inside a tool call, or on a
+ * dead model stream, cannot read a notice; it keeps spend bounded.
  *
  * WHY THIS EXISTS. A run was stopped at its 60-minute limit in the middle of
  * an investigation, and another at the 25-minute default. Neither agent knew time was
  * running out: nothing it could read said when the run ends. This module turns
  * the limit the platform already enforces into that fact, once, for every
  * consumer: the sentence every model node reads at the start of its prompt
- * (both invokeAgent paths), the one note the inbox pump delivers shortly before
- * the end, and the Claude CLI's single-command cap.
+ * (both invokeAgent paths), the notes the inbox pump delivers shortly before
+ * the limit and after it, and the Claude CLI's single-command cap.
  *
  * WHERE THE DEADLINE COMES FROM — the two clocks that actually stop a run, and
  * the EARLIER of them wins:
@@ -39,7 +53,7 @@ export const RUN_DEADLINE_ENV = 'RUN_DEADLINE_AT';
 export const RUN_LIMIT_MS_ENV = 'MAX_WORKFLOW_DURATION_MS';
 
 /**
- * How long before the end the one "time is nearly up" note is delivered.
+ * How long before the limit the one "time is nearly up" note is delivered.
  *
  * 10 minutes: long enough for an agent to finish or stop what it is running and
  * put its work where the next run can find it — the developer's measured
@@ -72,8 +86,24 @@ export const RUN_END_NOTICE_LEAD_MS = 10 * 60_000;
 export const RUN_FINALIZE_GRACE_MS = 2 * 60_000;
 
 /**
+ * How long past its time limit a run is given to hand over before it is
+ * stopped (founder, 2026-11-03: notices at the limit and +5, +10, +20 minutes;
+ * a run still going at +30 is stopped). The engine stops the run's model at
+ * the limit plus this (`runStopAt`).
+ */
+export const RUN_HANDOVER_WINDOW_MS = 30 * 60_000;
+
+/**
+ * When, after the limit, the run is told it is past it and must hand over:
+ * at the limit, then 5, 10 and 20 minutes after it. Each notice is firmer than
+ * the one before; the last is the final one (`runTimeNotice`).
+ */
+export const RUN_OVER_LIMIT_NOTICE_OFFSETS_MS: readonly number[] = Object.freeze([0, 5, 10, 20].map((m) => m * 60_000));
+
+/**
  * When the platform stops the run's PROCESS for good, measured from the
- * deadline: the finalize grace plus 30 s for the result the engine has by then
+ * deadline (the limit): the hand-over window, then the finalize grace after
+ * the engine stops the model, plus 30 s for the result the engine has by then
  * to leave the process (the runner hands it to the worker or posts it to the
  * control plane, then exits). Every backstop that kills or closes a run at its
  * deadline — the shared worker's timer, the dispatcher's deadline cancel, the
@@ -83,7 +113,7 @@ export const RUN_FINALIZE_GRACE_MS = 2 * 60_000;
  * loaders); selfhosted/__tests__/run-time-limit-contract.test.js fails when
  * any of the three drifts.
  */
-export const RUN_HARD_STOP_AFTER_DEADLINE_MS = RUN_FINALIZE_GRACE_MS + 30_000;
+export const RUN_HARD_STOP_AFTER_DEADLINE_MS = RUN_HANDOVER_WINDOW_MS + RUN_FINALIZE_GRACE_MS + 30_000;
 
 export function runDeadline(
   env: any = process.env,
@@ -110,9 +140,37 @@ export function clockTime(atMs: number): string {
 }
 
 /**
+ * When this run is STOPPED: its limit plus the hand-over window, as epoch ms,
+ * or null when the run has no deadline. The engine stops model work here.
+ */
+export function runStopAt(
+  env: any = process.env,
+  nowMs: number = Date.now(),
+  uptimeSeconds: number = process.uptime(),
+): number | null {
+  const d = runDeadline(env, nowMs, uptimeSeconds);
+  return d ? d.atMs + RUN_HANDOVER_WINDOW_MS : null;
+}
+
+/**
+ * IS THIS RUN PAST ITS TIME LIMIT? The one fact a workflow reads before it
+ * starts another round of a loop (a revision, a retry): past the limit it hands
+ * back what it has instead. False when the run has no deadline (a local run).
+ */
+export function runPastLimit(
+  env: any = process.env,
+  nowMs: number = Date.now(),
+  uptimeSeconds: number = process.uptime(),
+): boolean {
+  const d = runDeadline(env, nowMs, uptimeSeconds);
+  return !!d && nowMs >= d.atMs;
+}
+
+/**
  * THE SENTENCE every model node reads (both invokeAgent paths append it): when
- * this run is stopped. A fact, not an instruction — what to do with it is the
- * agent's judgement. '' when the run has no deadline.
+ * this run's time limit is, and what happens past it. A fact, not an
+ * instruction — what to do with it is the agent's judgement. '' when the run
+ * has no deadline.
  */
 export function runDeadlineSentence(
   env: any = process.env,
@@ -122,26 +180,70 @@ export function runDeadlineSentence(
   const d = runDeadline(env, nowMs, uptimeSeconds);
   if (!d) return '';
   const limit = d.limitMinutes ? ` (its ${d.limitMinutes}-minute run-time limit)` : ' (its run-time limit)';
-  return `This run is stopped at ${clockTime(d.atMs)}${limit}.`;
+  return `This run's time limit is ${clockTime(d.atMs)}${limit}; past it the run is asked to hand back what it has, and it is stopped at ${clockTime(d.atMs + RUN_HANDOVER_WINDOW_MS)}.`;
 }
 
+/** A notice the inbox pump delivers once: `id` is what it remembers. */
+export interface RunTimeNotice {
+  id: string;
+  text: string;
+}
+
+const OVER_LIMIT_ASK = 'Start no new work. Hand back now what you have: what is finished and what is not. The next run continues from it.';
+
 /**
- * THE ONE NOTE shortly before the end, or null when it is not due (yet) or the
- * run is too short to warrant one. Pure: the caller (the inbox pump) decides
- * delivery and remembers that it delivered.
+ * THE NOTICE DUE NOW, or null. Before the limit: one note RUN_END_NOTICE_LEAD_MS
+ * before it (not for a run too short to warrant one). From the limit: the
+ * over-limit notice whose time (RUN_OVER_LIMIT_NOTICE_OFFSETS_MS) is the latest
+ * one reached, each firmer than the one before, the last saying it is the final
+ * notice; nothing once the run is past its stop. Pure: the caller (the inbox
+ * pump) delivers it and remembers its `id`, so each is delivered once — and a
+ * notice that could not be delivered before the next one was due is replaced
+ * by that one, not sent late.
  */
-export function runEndNotice(
+export function runTimeNotice(
   env: any = process.env,
   nowMs: number = Date.now(),
   uptimeSeconds: number = process.uptime(),
-): string | null {
+): RunTimeNotice | null {
   const d = runDeadline(env, nowMs, uptimeSeconds);
   if (!d) return null;
-  if (d.limitMinutes !== null && d.limitMinutes * 60_000 < 2 * RUN_END_NOTICE_LEAD_MS) return null;
-  const leftMs = d.atMs - nowMs;
-  if (leftMs <= 0 || leftMs > RUN_END_NOTICE_LEAD_MS) return null;
-  const leftMin = Math.max(1, Math.round(leftMs / 60_000));
-  return `Platform note: about ${leftMin} minute${leftMin === 1 ? '' : 's'} of this run are left. It is stopped at ${clockTime(d.atMs)}, its run-time limit.`;
+  const stopAt = clockTime(d.atMs + RUN_HANDOVER_WINDOW_MS);
+  const pastMs = nowMs - d.atMs;
+  if (pastMs < 0) {
+    if (d.limitMinutes !== null && d.limitMinutes * 60_000 < 2 * RUN_END_NOTICE_LEAD_MS) return null;
+    if (-pastMs > RUN_END_NOTICE_LEAD_MS) return null;
+    const leftMin = Math.max(1, Math.round(-pastMs / 60_000));
+    return {
+      id: 'before-limit',
+      text: `Platform note: about ${leftMin} minute${leftMin === 1 ? '' : 's'} are left before this run's time limit (${clockTime(d.atMs)}). `
+        + 'Past it the run is asked to hand back what it has, and it is stopped '
+        + `${Math.round(RUN_HANDOVER_WINDOW_MS / 60_000)} minutes after it.`,
+    };
+  }
+  if (pastMs >= RUN_HANDOVER_WINDOW_MS) return null;
+  const offsets = RUN_OVER_LIMIT_NOTICE_OFFSETS_MS;
+  let i = 0;
+  while (i + 1 < offsets.length && pastMs >= offsets[i + 1]) i += 1;
+  const overMin = Math.round(offsets[i] / 60_000);
+  const id = `over-limit-${overMin}`;
+  const limit = d.limitMinutes ? `its ${d.limitMinutes}-minute time limit` : 'its time limit';
+  if (i === 0) {
+    return { id, text: `Platform note: this run is past ${limit} (${clockTime(d.atMs)}). ${OVER_LIMIT_ASK} It is stopped at ${stopAt}.` };
+  }
+  if (i < offsets.length - 1) {
+    return {
+      id,
+      text: `Platform note, notice ${i + 1}: this run is ${overMin} minutes past ${limit} and has not handed back yet. `
+        + `Stop what you are doing and hand back now: what is finished and what is not. The next run continues from it. It is stopped at ${stopAt}.`,
+    };
+  }
+  return {
+    id,
+    text: `Platform note, FINAL NOTICE: this run is ${overMin} minutes past ${limit}. It is stopped at ${stopAt}, `
+      + `in ${Math.round((RUN_HANDOVER_WINDOW_MS - offsets[i]) / 60_000)} minutes, whatever it is doing. Hand back now: `
+      + 'what is finished and what is not. At the stop, only what is already saved is kept for the next run.',
+  };
 }
 
 /**

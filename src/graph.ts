@@ -42,7 +42,7 @@ import {
   CHAT_ENTRY_FLAG, CHAT_CALL, declaresChatEntry, chatEntryProblems, normalizeChatTurn, renderChatTurn, chatReplyText,
 } from './chat-entry.js';
 import { chatAttachmentsUnreadable, resolveChatAttachments } from './chat-attachments.js';
-import { runDeadline, RUN_FINALIZE_GRACE_MS } from './run-deadline.js';
+import { runStopAt, RUN_FINALIZE_GRACE_MS } from './run-deadline.js';
 import {
   startDeadlineClock, deadlineError, eitherSignal, whenAborted, deadlineStopSentence, deadlineStopFact, DEADLINE_STOP_KEY,
 } from './deadline-stop.js';
@@ -1632,8 +1632,10 @@ export class WorkflowGraph {
     const maxSteps = config?.recursionLimit ?? 100;
     let stepCount = 0;
 
-    // ── The run's deadline (deadline-stop.ts) ───────────────────────────
-    // The deadline the platform declared (run-deadline.ts) stops MODEL work:
+    // ── The run's stop (deadline-stop.ts) ───────────────────────────────
+    // The run's STOP — its time limit plus the hand-over window
+    // (run-deadline.ts runStopAt; the limit itself only brings notices and
+    // ends loops, founder 2026-11-03) — stops MODEL work:
     // every model call gets `modelSignal`, which fires on a person's Stop OR at
     // the deadline. Code steps get `stepAbortController.signal`, which fires on
     // a person's Stop OR when the grace after the deadline is spent — so a step
@@ -1643,7 +1645,7 @@ export class WorkflowGraph {
     // has already reported that it stopped.
     // `options.deadlineAtMs` / `options.finalizeGraceMs` let an embedder (and
     // the tests) state them explicitly; otherwise the platform's facts apply.
-    const declaredDeadline = Number.isFinite(options.deadlineAtMs) ? options.deadlineAtMs : (runDeadline()?.atMs ?? null);
+    const declaredDeadline = Number.isFinite(options.deadlineAtMs) ? options.deadlineAtMs : runStopAt();
     const deadlineClock = startDeadlineClock(declaredDeadline,
       Number.isFinite(options.finalizeGraceMs) ? options.finalizeGraceMs : RUN_FINALIZE_GRACE_MS);
     if (deadlineClock.graceOver.aborted) abortSteps(deadlineClock.graceOver.reason);
@@ -1654,7 +1656,7 @@ export class WorkflowGraph {
     let deadlineStoppedModelIn: string | null = null; // a model call the deadline stopped or refused
     if (deadlineClock.atMs !== null) {
       deadlineClock.reached.addEventListener('abort', () => {
-        if (!internalAbortController.signal.aborted) timeline.step('Run deadline reached — model work stopped; steps recording its answer may still finish');
+        if (!internalAbortController.signal.aborted) timeline.step('Run stopped past its time limit — model work stopped; steps recording its answer may still finish');
       }, { once: true });
     }
     /**
@@ -1682,7 +1684,7 @@ export class WorkflowGraph {
         answeredBy,
       });
       state.set(DEADLINE_STOP_KEY, fact);
-      timeline.step('Workflow stopped at its deadline');
+      timeline.step('Workflow stopped past its time limit');
       return { success: false, error, state: state.getAll(), executionLog, stoppedAtDeadline: true, deadlineStop: fact };
     };
 
