@@ -10,6 +10,7 @@ import { logger } from './logger.js';
 import { timeline } from './timeline.js';
 import { SESSION_INFO_FILE } from './constants.js';
 import { createAttemptBudget, type AttemptDecision } from './failure-class.js';
+import { waitForPlatform } from './platform-availability.js';
 import { preferredAgentFor } from './node-vendor.js';
 
 /**
@@ -33,6 +34,7 @@ async function awaitRetry(
   failure: unknown,
   aborted: () => boolean,
   signal: AbortSignal | null = null,
+  deadlineAtMs: number | null = null,
 ): Promise<boolean> {
   if (!decision.retry) {
     if (decision.stoppedBy === 'deadline') {
@@ -61,6 +63,30 @@ async function awaitRetry(
       `[workflow] node '${nodeName}' failed (${decision.failureClass}), `
       + `retrying (${decision.index}/${decision.of})…`,
     );
+  }
+  // A NETWORK failure while the platform this run works through is down is
+  // not the node's failure: wait for the platform to answer again, then make
+  // the retry already decided on (platform-availability.ts). No probe, or the
+  // platform answering → the ordinary schedule below, unchanged.
+  if (decision.transientKind === 'network') {
+    const platform = await waitForPlatform({
+      signal, deadlineAtMs,
+      onWaiting: () => logger.warn(
+        `[workflow] node '${nodeName}': the platform this run works through is not answering — `
+        + 'waiting for it to come back before retrying.',
+      ),
+    });
+    if (platform.outcome === 'returned') {
+      logger.warn(`[workflow] node '${nodeName}': the platform answers again after ${Math.round(platform.waitedMs / 1000)}s — retrying now.`);
+      return !aborted();
+    }
+    if (platform.outcome === 'still-down') {
+      const after = `${Math.round(platform.waitedMs / 60_000)} min`;
+      if (platform.stoppedBy !== 'abort') {
+        logger.warn(`[workflow] node '${nodeName}': the platform still does not answer after ${after} (${platform.stoppedBy === 'deadline' ? "the run's deadline" : 'the wait limit'}) — not retrying.`);
+      }
+      return false;
+    }
   }
   if (decision.delayMs > 0) {
     // A Stop (or the end of the grace after the deadline) ends the wait at
@@ -258,7 +284,7 @@ export class Node {
         // structured provider fields). Either way ONE call, ONE decider.
         const evidence = lastThrown ?? lastFailure?.error;
         const decision = budget.next(evidence);
-        if (!await awaitRetry(this.name, decision, evidence, _aborted, _stepSignal())) break;
+        if (!await awaitRetry(this.name, decision, evidence, _aborted, _stepSignal(), _budgetOptions().deadlineAtMs)) break;
       }
       // How many attempts this node ACTUALLY made — the run's error line quotes
       // it, and `retries + 1` stopped being that number the moment a transient
@@ -424,7 +450,7 @@ export class Node {
       } catch (error) {
         lastError = error;
         const decision = llmBudget.next(error);
-        if (!await awaitRetry(this.name, decision, error, _aborted, _stepSignal())) break;
+        if (!await awaitRetry(this.name, decision, error, _aborted, _stepSignal(), _budgetOptions().deadlineAtMs)) break;
       }
     }
 
