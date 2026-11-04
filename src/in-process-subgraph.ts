@@ -663,7 +663,7 @@ export async function runInProcessSubgraph(workflowName, options: any = {}) {
       // /tmp from growing unbounded on long-lived warm-pool tasks across
       // many template deploys. Fire-and-forget; eviction failures are
       // logged but never fail the dispatch.
-      try { evictCacheIfOver(); } catch { /* logged inside */ }
+      try { evictCacheIfOver({ keep: cacheDir }); } catch { /* logged inside */ }
     } catch (err) {
       if (err.fallback) {
         await callFinalize({
@@ -751,6 +751,9 @@ export async function runInProcessSubgraph(workflowName, options: any = {}) {
 
   let runResult;
   let finalState;
+  // This child runs from its bundle's folder: held for as long as it runs (bundlesHeld).
+  const runningDir = registry.getMeta(workflowName)?.cacheDir || null;
+  if (runningDir) runningFrom.set(runningDir, (runningFrom.get(runningDir) || 0) + 1);
   try {
     // buildGraph() runs INSIDE the env scope too — templates may read
     // process.env at graph-build time (skill gating, base URLs). A throw
@@ -809,6 +812,10 @@ export async function runInProcessSubgraph(workflowName, options: any = {}) {
       : err;
   } finally {
     deadline.dispose();
+    if (runningDir) {
+      const left = (runningFrom.get(runningDir) || 1) - 1;
+      if (left > 0) runningFrom.set(runningDir, left); else runningFrom.delete(runningDir);
+    }
   }
 
   // The graph engine sets `stoppedExternally: true` on the *wrapper*
@@ -912,7 +919,25 @@ function dirSizeBytes(dir) {
  * on each fresh extract, so cold versions naturally rank older. Good
  * enough for warm-pool cleanup; not a replacement for a real LRU cache.
  */
-export function evictCacheIfOver({ cap = Number(process.env.ZIBBY_SUBGRAPH_CACHE_CAP_BYTES || 2 * 1024 * 1024 * 1024) }: any = {}) {
+/**
+ * THE BUNDLES THIS PROCESS STILL HOLDS (2026-11-04, plans/2026-11-04-one-
+ * lifetime-rule.md #36): the folder of every child class registered here (the
+ * next dispatch of that child runs from it again, without re-extracting) and
+ * every folder a child run is using right now. Eviction never removes one of
+ * these. The holders are all in THIS process: the cache is this process's own
+ * /tmp (a self-host run has a container of its own; a cloud warm-pool task
+ * runs one parent at a time, its children in-process), so this in-process
+ * hold is the whole answer — a control-plane call per eviction could only
+ * repeat it, a network round-trip later.
+ */
+const runningFrom = new Map(); // cacheDir → child runs using it now
+export function bundlesHeld() {
+  const held = new Set(runningFrom.keys());
+  for (const entry of registry.list()) if (entry?.meta?.cacheDir) held.add(entry.meta.cacheDir);
+  return held;
+}
+
+export function evictCacheIfOver({ cap = Number(process.env.ZIBBY_SUBGRAPH_CACHE_CAP_BYTES || 2 * 1024 * 1024 * 1024), keep = null }: any = {}) {
   try {
     if (!existsSync(CACHE_ROOT)) return { evicted: 0, freedBytes: 0 };
     const entries = readdirSync(CACHE_ROOT);
@@ -927,6 +952,8 @@ export function evictCacheIfOver({ cap = Number(process.env.ZIBBY_SUBGRAPH_CACHE
     }
     if (total <= cap) return { evicted: 0, freedBytes: 0, totalBytes: total };
     rows.sort((a, b) => a.mtimeMs - b.mtimeMs); // oldest first
+    const held = bundlesHeld();
+    let keptHeld = 0;
     const targetBytes = Math.floor(cap * 0.7);
     let freed = 0;
     let evicted = 0;
@@ -935,12 +962,16 @@ export function evictCacheIfOver({ cap = Number(process.env.ZIBBY_SUBGRAPH_CACHE
       // Skip dirs that still have a lock sentinel — another process is
       // mid-extract; deleting under it would corrupt the import.
       if (existsSync(join(r.full, '.lock'))) continue;
+      // Held by this process (bundlesHeld), or the bundle just extracted for
+      // the dispatch that asked: kept, and said once per eviction pass.
+      if (r.full === keep || held.has(r.full)) { keptHeld += 1; continue; }
       try { rmSync(r.full, { recursive: true, force: true }); freed += r.size; evicted += 1; }
       catch (e) { logger.debug(`[sub-graph cache] evict skip ${r.name}: ${e.message}`); }
     }
     if (evicted > 0) {
       logger.info(`[sub-graph cache] evicted ${evicted} entr(y/ies), freed ${(freed / 1024 / 1024).toFixed(1)}MB`);
     }
+    if (keptHeld > 0) logger.info(`[lifetime] kept run-file ${keptHeld} sub-graph bundle(s) held by this process site=in-process-subgraph.evictCacheIfOver`);
     return { evicted, freedBytes: freed, totalBytes: total - freed };
   } catch (e) {
     logger.debug(`[sub-graph cache] evict failed: ${e.message}`);

@@ -70,6 +70,28 @@ describe('the host reader seam', () => {
     expect(cleanup).toHaveBeenCalledTimes(1);
   });
 
+  it('a later node of the same run still has the files: they go when the RUN ends, not when the model call settles (#52, 2026-11-04)', async () => {
+    const cleanup = vi.fn();
+    registerChatAttachmentResolver(async () => ({ images: [], files: [{ path: '/tmp/a/1.pdf', name: 'spec.pdf' }], cleanup }));
+    const graph = new WorkflowGraph({ invokeAgent: vi.fn(async () => 'seen') });
+    let cleanedWhenNextNodeRan: boolean | null = null;
+    graph.addNode('manager', {
+      name: 'manager', chatEntry: true, prompt: () => 'You are the manager.',
+      outputSchema: z.object({ answered: z.string() }),
+      async execute(ctx) { return { answered: String(await ctx.invokeAgent({}, { prompt: 'You are the manager.' })) }; },
+    });
+    graph.addNode('reviewer', {
+      name: 'reviewer', outputSchema: z.object({ ok: z.boolean() }),
+      async execute() { cleanedWhenNextNodeRan = cleanup.mock.calls.length > 0; return { ok: true }; },
+    });
+    graph.setEntryPoint('manager');
+    graph.addEdge('manager', 'reviewer');
+    graph.addEdge('reviewer', 'END');
+    await graph.run({}, { chat: { message: 'see attached', attachments: [ref] } });
+    expect(cleanedWhenNextNodeRan).toBe(false);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+  });
+
   it('the host\'s own facts about the files reach the chat prompt as written', async () => {
     registerChatAttachmentResolver(async () => ({
       images: [{ path: '/tmp/a/0.png', mimeType: 'image/png', name: 'screen.png' }], files: [],

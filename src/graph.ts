@@ -1299,6 +1299,13 @@ export class WorkflowGraph {
    */
   async run(agent, initialState: any = {}, options: any = {}) {
     if (!this.entryPoint) throw new Error('No entry point set for graph');
+    // FILES THIS RUN OPENED LIVE AS LONG AS THE RUN (2026-11-04, plans/2026-11-04-
+    // one-lifetime-rule.md #52; the inbox-pump fix of the same day, applied to
+    // the second place). A chat turn's attached files were removed the moment
+    // its model call settled, while the model is told they last for the run
+    // and a later node of the same run is handed their paths. They are removed
+    // here, when this run ends (the `finally` below), on every exit path.
+    const runFileCleanups: Array<() => void> = [];
 
     // ── Trigger-input normalization hook ────────────────────────────────
     // An Agent subclass may need to reshape its raw trigger input before ANY
@@ -1883,7 +1890,8 @@ export class WorkflowGraph {
           ...(attachmentFiles?.images.length ? { images: [...(Array.isArray(opts.images) ? opts.images : []), ...attachmentFiles.images] } : {}),
           // Engine always wins. A person's Stop OR the run's deadline.
           signal: modelSignal,
-        }).finally(() => attachmentFiles?.cleanup());
+        });
+        if (attachmentFiles) runFileCleanups.push(attachmentFiles.cleanup);
         // What the deadline needs to know about this call: it answered, or
         // the deadline stopped it while it was still working.
         strategyPromise.then(
@@ -2194,6 +2202,9 @@ export class WorkflowGraph {
     return result;
     } finally {
       deadlineClock.dispose();
+      for (const cleanup of runFileCleanups.splice(0)) {
+        try { cleanup(); } catch { /* a file already gone holds nothing */ }
+      }
       // Cleanup runs once on EVERY exit path: success, regular failure,
       // unexpected throw, recursion-limit, Studio stop. Previously cleanup
       // only fired inside Studio-stop branches, so successful and failed
