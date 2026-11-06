@@ -14,7 +14,7 @@
 
 import { AgentStrategy } from './agents/base.js';
 import { logger } from './logger.js';
-import { getSkill, skillPromptText, searchedSkillIds } from './skill-registry.js';
+import { getSkill, skillPromptText, searchedSkillIds, withEveryModelStepSkills } from './skill-registry.js';
 import { currentRunEffort, currentEffortCeiling } from './exec-context.js';
 import { repositoryRulesPartsAsync, preparedFoldersBlock } from './repository-rules.js';
 import { runDeadlineSentence } from './run-deadline.js';
@@ -258,12 +258,27 @@ export function resolveInvocationEffort({ options = {}, envEffort, nodeConfigEff
   return ran;
 }
 
+/**
+ * The skills THIS CALL declares — the node's own list. Their pages go into the
+ * prompt; the call's tools are these plus every platform ability
+ * (resolveInvocationExtras, skill-registry.ts withEveryModelStepSkills). One
+ * reading for both invokeAgent paths (this file's and @zibby/core's).
+ */
+export function declaredInvocationSkills({ options = {}, context = {} }: any = {}): string[] {
+  const list = options.skills || context.skills || [];
+  return Array.isArray(list) ? list : [];
+}
+
 export function resolveInvocationExtras({ options = {}, stateView = {}, context = {} }: any = {}) {
   return {
     workspace: stateView.workspace || options.workspace,
     schema: options.schema || context.schema,
     images: options.images || context.images || [],
-    skills: options.skills || context.skills || [],
+    // The step's tools: what the node declares, plus every platform ability
+    // (a skill declaring `everyModelStep`) the node does not deny — e.g. the
+    // tool a person hears the run through, which a person's line may ask any
+    // step to use. Pages stay the declared skills' (declaredInvocationSkills).
+    skills: withEveryModelStepSkills(declaredInvocationSkills({ options, context }), { disallowedTools: options.disallowedTools }),
     // Ad-hoc per-agent remote MCP servers (row instance data — like skills, NOT
     // a registered skill). The executor resolves the workflow row's customMcp
     // into [{serverName, def}] and puts it on state; strategies merge it into
@@ -466,7 +481,9 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
     standing.push({ key: k, text });
   };
 
-  const skills = finalOptions.skills || [];
+  // The DECLARED skills' pages only: a platform ability the step was handed
+  // without declaring it brings its tools, not its page.
+  const skills = declaredInvocationSkills({ options, context });
   if (skills.length > 0 && !options.skipPromptFragments) {
     // ONLY inject the fragment of an integration that is actually connected.
     //
