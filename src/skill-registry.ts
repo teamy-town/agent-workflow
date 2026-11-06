@@ -232,6 +232,59 @@ export function listSkillIds() {
   return Array.from(_registry.keys());
 }
 
+/**
+ * A PLATFORM ABILITY — A SKILL EVERY MODEL STEP HAS, WITH NO NODE DECLARING IT.
+ *
+ * A skill that declares `everyModelStep: true` is the platform's, not a
+ * template's: every model step of every run is handed its tools whether or
+ * not its node lists it. Example: the tool a person hears a run through. A
+ * person's line is delivered into WHICHEVER step is running, and the engine
+ * tells that step to answer with the tool — a step whose node had not
+ * declared it was told to use a tool it did not have (run_log/product-owner,
+ * 2026-11-06: six lines answered in plain text the person never saw).
+ *
+ * Only the TOOLS come for free. The skill's page (its promptFragment) is still
+ * added only where a node declares the skill: a page written for a node that
+ * chose the skill would otherwise reach every step of every agent.
+ *
+ * A node keeps its own deny list: a skill whose every tool the node lists in
+ * `disallowedTools` (bare name, `mcp__<server>__<tool>`, `mcp__<server>__*`
+ * or `mcp__<server>`) is not added to it.
+ *
+ * ONE declaration (the flag on the skill), read here for the engine and by the
+ * host's control plane through the same registry, so the tools a run is handed
+ * and the tools its platform will serve cannot disagree.
+ */
+export function everyModelStepSkillIds(): string[] {
+  const ids: string[] = [];
+  for (const [id, skill] of _registry) if (skill?.everyModelStep === true) ids.push(id);
+  return ids;
+}
+
+function deniesEveryTool(skill: any, id: string, disallowedTools: unknown): boolean {
+  const denied = new Set(Array.isArray(disallowedTools) ? disallowedTools.filter((t) => typeof t === 'string') : []);
+  if (!denied.size) return false;
+  const server = skill?.serverName || id;
+  if (denied.has(`mcp__${server}`) || denied.has(`mcp__${server}__*`)) return true;
+  const tools = Array.isArray(skill?.tools) ? skill.tools.map((t: any) => t?.name).filter(Boolean) : [];
+  return tools.length > 0 && tools.every((name: string) => denied.has(name) || denied.has(`mcp__${server}__${name}`));
+}
+
+/**
+ * The skills a model step is handed: its declared ones, then every platform
+ * ability (everyModelStepSkillIds) it does not already list and does not deny.
+ * A declared list is returned unchanged when no platform ability is registered.
+ */
+export function withEveryModelStepSkills(declared: unknown, { disallowedTools }: { disallowedTools?: unknown } = {}): string[] {
+  const list: string[] = Array.isArray(declared) ? [...declared] : [];
+  for (const id of everyModelStepSkillIds()) {
+    if (list.includes(id)) continue;
+    if (deniesEveryTool(_registry.get(id), id, disallowedTools)) continue;
+    list.push(id);
+  }
+  return list;
+}
+
 /** Remove all registered skills. Primarily for test teardown. */
 export function clearSkills() {
   _registry.clear();

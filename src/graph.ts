@@ -1551,7 +1551,11 @@ export class WorkflowGraph {
     // instantiate each skill's middleware once per run.
     const _skillMiddleware = new Map();
     try { await import('@zibby/skills'); } catch { /* @zibby/skills not installed */ }
-    const { getSkill, skillEnabledForAgent } = await import('./skill-registry.js');
+    const { getSkill, skillEnabledForAgent, withEveryModelStepSkills } = await import('./skill-registry.js');
+    // A node's step skills: its declared ones plus every platform ability it
+    // does not deny (skill-registry.ts withEveryModelStepSkills) — the same
+    // list its model calls are handed (strategy-registry.ts resolveInvocationExtras).
+    const stepSkillIds = (nodeConfig: any): string[] => withEveryModelStepSkills(nodeConfig?.skills || [], { disallowedTools: nodeConfig?.disallowedTools });
 
     // Per-run merged skill registry: user's config.skills (declarative,
     // stateful — e.g. sessionSkill({ store: ... })) overrides builtins on
@@ -1573,7 +1577,7 @@ export class WorkflowGraph {
 
     const seenSkills = new Set();
     for (const [, node] of this.nodes) {
-      for (const id of (node.config?.skills || [])) seenSkills.add(id);
+      for (const id of stepSkillIds(node.config)) seenSkills.add(id);
     }
     for (const id of seenSkills) {
       const skill = resolveSkill(id);
@@ -1803,7 +1807,7 @@ export class WorkflowGraph {
       //                                              <  engine (signal)
       // A skill returning null/undefined contributes nothing.
       let skillInvokeOpts: any = {};
-      const nodeSkillIds = node.config?.skills || [];
+      const nodeSkillIds = stepSkillIds(node.config);
       for (const id of nodeSkillIds) {
         const skill = resolveSkill(id);
         if (typeof skill?.invokeAgentOptions !== 'function') continue;
@@ -2043,7 +2047,7 @@ export class WorkflowGraph {
       });
 
       try {
-        const nodeSkillMw = (node.config?.skills || []).map(id => _skillMiddleware.get(id)).filter(Boolean);
+        const nodeSkillMw = stepSkillIds(node.config).map(id => _skillMiddleware.get(id)).filter(Boolean);
         const allMw = [...this.middleware, ...nodeSkillMw];
 
         // Publish this graph's agent shell + abort signal into the ALS
