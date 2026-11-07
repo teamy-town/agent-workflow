@@ -16,7 +16,7 @@ import { AgentStrategy } from './agents/base.js';
 import { logger } from './logger.js';
 import { getSkill, skillPromptText, searchedSkillIds, withEveryModelStepSkills } from './skill-registry.js';
 import { currentRunEffort, currentEffortCeiling } from './exec-context.js';
-import { repositoryRulesPartsAsync, preparedFoldersBlock } from './repository-rules.js';
+import { repositoryRulesPlanAsync, preparedFoldersBlock } from './repository-rules.js';
 import { runDeadlineSentence } from './run-deadline.js';
 import { unansweredLinesBlock } from './unanswered-lines.js';
 import { unavailableToolsBlock } from './unavailable-tools.js';
@@ -607,9 +607,15 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
   // caches (run_log/magnum/2026-10-30-pm-chat-turn-heavy: ~36k characters of
   // rule files re-sent uncached on every chat turn). Without standing text:
   // here in the prompt, exactly as before.
-  for (const p of await repositoryRulesPartsAsync({ workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots })) {
+  // A file the person turned off for this agent (its Settings) is in neither;
+  // when the node's engine would load one by itself, it is told to load none of
+  // its own (`skipNativeRuleFiles`) and the files left on come in this block.
+  const rules = await repositoryRulesPlanAsync({ workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots });
+  for (const p of rules.parts) {
     addStandingOrPrompt(p.key, `\n\n${p.text}`);
   }
+  if (rules.leftOut.length) logger.info(`[workflow] rule files turned off in this agent's settings, left out: ${rules.leftOut.join(', ')}`);
+  if (rules.skipNativeRuleFiles) finalOptions.skipNativeRuleFiles = true;
 
   // WHEN THIS RUN IS STOPPED — one sentence, every model node, every vendor
   // (run-deadline.ts; core's invokeAgent appends the same). '' when the run has
