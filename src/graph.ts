@@ -46,6 +46,7 @@ import { runStopAt, RUN_FINALIZE_GRACE_MS } from './run-deadline.js';
 import {
   startDeadlineClock, deadlineError, eitherSignal, whenAborted, deadlineStopSentence, deadlineStopFact, DEADLINE_STOP_KEY,
 } from './deadline-stop.js';
+import { defaultMailRoundFor, voiceNodeOf, mailRoundNode, mailRoundNodeConfigs, MAIL_ROUND_NODE } from './mail-round.js';
 
 // ── Session helpers ────────────────────────────────────────────────────────
 
@@ -233,6 +234,7 @@ export function resolveWorkflowSession({
 
 export class WorkflowGraph {
   _compiledPrompts?: any;
+  _defaultMailRound?: boolean;
   _invokeAgent?: any;
   conditionalCodeMap?: any;
   contextSchema?: any;
@@ -1299,6 +1301,22 @@ export class WorkflowGraph {
    */
   async run(agent, initialState: any = {}, options: any = {}) {
     if (!this.entryPoint) throw new Error('No entry point set for graph');
+    // ── THE AGENT'S MAIL ROUND (mail-round.ts) ──────────────────────────────
+    // A start the platform made to read the mail addressed to this agent, of a
+    // graph that does not read its mailbox itself, is the engine's default
+    // mail round — the template's graph (its input schema, its normalizeInput,
+    // its nodes) is not run: the round was handed no work.
+    const mailRound = defaultMailRoundFor(this, initialState);
+    if (mailRound) {
+      const voiceId = voiceNodeOf(this);
+      const round = new WorkflowGraph({ invokeAgent: this._invokeAgent || undefined });
+      round._defaultMailRound = true;
+      round.addNode(MAIL_ROUND_NODE, mailRoundNode({ agent: mailRound.agent || String(process.env.WORKFLOW_TYPE || '').replace(/[-_]+/g, ' ').trim(), voice: voiceId ? this.nodes.get(voiceId)?.config : null }));
+      round.setEntryPoint(MAIL_ROUND_NODE);
+      round.addEdge(MAIL_ROUND_NODE, 'END');
+      timeline.step(`Mail round — reading the mail addressed to this agent${voiceId ? ` (speaking as '${voiceId}')` : ''}`);
+      return round.run(null, { ...initialState, nodeConfigs: mailRoundNodeConfigs(initialState.nodeConfigs, voiceId) }, options);
+    }
     // FILES THIS RUN OPENED LIVE AS LONG AS THE RUN. A chat turn's attached files were removed the moment
     // its model call settled, while the model is told they last for the run
     // and a later node of the same run is handed their paths. They are removed
