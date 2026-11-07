@@ -1052,7 +1052,7 @@ export function preparedFoldersBlock(env: Record<string, string | undefined> = p
   // A rule file the person turned off for this agent is not named here either
   // (it is still mounted; nothing in the prompt points at it).
   const off = parseRuleFilesOff(currentRuleFilesOff(env));
-  const outside = [...new Set(preparedWorkspaces(env).flatMap((w) => w.ancestorRuleFiles))].filter((f) => !off.has(f));
+  const outside = [...new Set(preparedWorkspaces(env).flatMap((w) => w.ancestorRuleFiles))].filter((f) => !ruleFileTurnedOff(f, off));
   const companion = foldersAttachment(env) === 'companion';
   return [PREPARED_FOLDERS_HEADING,
     ...(companion ? ['These folders are not in your own filesystem: they are in this run\'s folder container, at the directories below. Reach them with run_command (run_workspaces): a shell command run in one of those directories — read, search, git, edit, build, test.'] : []),
@@ -1117,12 +1117,19 @@ function teammateLines(env: Record<string, string | undefined>): string[] {
  */
 export { RULE_FILES_OFF_ENV };
 const MAX_RULE_FILES_OFF = 256;
+/**
+ * The list entry that turns EVERY rule file off — the person's "all off"
+ * switch, which also covers files that appear later (a list of paths would
+ * miss them).
+ */
+export const ALL_RULE_FILES = '*';
 
-/** The turned-off list as a set of absolute, normalized paths; anything else in it is ignored. PURE. */
+/** The turned-off list as a set of absolute, normalized paths (or ALL_RULE_FILES); anything else in it is ignored. PURE. */
 export function parseRuleFilesOff(raw: unknown): Set<string> {
   let list: unknown = raw;
   if (typeof raw === 'string') { try { list = JSON.parse(raw); } catch { return new Set(); } }
   if (!Array.isArray(list)) return new Set();
+  if (list.includes(ALL_RULE_FILES)) return new Set([ALL_RULE_FILES]);
   return new Set(list.filter((p): p is string => typeof p === 'string' && isAbsolute(p) && normalize(p) === p && p.length <= 1024)
     .slice(0, MAX_RULE_FILES_OFF));
 }
@@ -1155,6 +1162,7 @@ export function personPathOf(path: string, workspaces: PreparedWorkspace[]): str
 /** Whether a rule file is on the turned-off list, by its own path or its place on the person's disk. PURE. */
 export function ruleFileTurnedOff(path: string, off: Set<string>, workspaces: PreparedWorkspace[] = []): boolean {
   if (!off || !off.size) return false;
+  if (off.has(ALL_RULE_FILES)) return true;
   return off.has(path) || off.has(personPathOf(path, workspaces));
 }
 

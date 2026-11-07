@@ -12,7 +12,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import {
   repositoryRulesParts, repositoryRulesPlan, repositoryRulesPlanAsync, preparedFoldersBlock,
-  parseRuleFilesOff, personPathOf, collectRepositoryRules, collectRepositoryRulesAsync, RULE_FILES_OFF_ENV,
+  parseRuleFilesOff, personPathOf, collectRepositoryRules, collectRepositoryRulesAsync, RULE_FILES_OFF_ENV, ALL_RULE_FILES,
 } from '../repository-rules.js';
 import { runInContext } from '../exec-context.js';
 
@@ -87,6 +87,17 @@ describe('a turned-off rule file is left out of the block', () => {
     const { ws, original, env, work } = fixture();
     const off = [join(ws, 'CLAUDE.md'), join(ws, 'AGENTS.md'), join(original, 'CLAUDE.md'), join(original, 'brand', 'AGENTS.md')];
     expect(repositoryRulesParts({ workspace: work, env: env(), ruleFilesOff: off })).toEqual([]);
+  });
+
+  it('"all off" (the person\'s one switch) leaves out every file — including one that appeared after it was set', () => {
+    const { ws, env, work, copy } = fixture();
+    put(join(copy, 'AGENTS.md'), '# New\nAPPEARED_LATER');
+    const plan = repositoryRulesPlan({ workspace: work, env: env({ [RULE_FILES_OFF_ENV]: JSON.stringify([ALL_RULE_FILES]) }) });
+    expect(plan.parts).toEqual([]);
+    expect(plan.leftOut.length).toBe(5);
+    expect(preparedFoldersBlock(env({ [RULE_FILES_OFF_ENV]: JSON.stringify([ALL_RULE_FILES]) }))).not.toContain(join(ws, 'CLAUDE.md'));
+    const codex = repositoryRulesPlan({ workspace: copy, strategy: { nativeRuleFiles: ['AGENTS.md'], skipsNativeRuleFiles: true }, env: env(), ruleFilesOff: [ALL_RULE_FILES] });
+    expect(codex.skipNativeRuleFiles).toBe(true);
   });
 
   it('an in-process child owns its list: an empty one is not the parent process\'s env', async () => {
