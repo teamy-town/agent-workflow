@@ -56,6 +56,16 @@ export class AgentStrategy {
    */
   get nativeRuleFiles(): string[] { return []; }
 
+  /**
+   * Whether this engine can be started WITHOUT the rule files it reads by
+   * itself, when invokeAgent passes `skipNativeRuleFiles: true` (the person
+   * turned off a file the engine would load — repository-rules.ts
+   * parseRuleFilesOff; the files left on then come in the prompt). An engine
+   * that declares `nativeRuleFiles` must say how it honours this, or a
+   * turned-off file still reaches it.
+   */
+  get skipsNativeRuleFiles(): boolean { return false; }
+
   async invoke(_prompt, _options: any = {}) {
     throw new Error(`${this.constructor.name}.invoke() must be implemented`);
   }

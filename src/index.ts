@@ -39,7 +39,7 @@ export type { ChildRunTransport, ChildRunConnection, ChildRunCall, ChildRunCallN
 // The host's probe for "is the platform this run works through answering?" (platform-availability.ts).
 export { registerPlatformAvailability, getPlatformAvailability, waitForPlatform, PLATFORM_POLL_MS, PLATFORM_WAIT_MAX_MS } from './platform-availability.js';
 export { isNotSetUp, SUBGRAPH_NOT_SET_UP } from './not-set-up.js';
-export { currentRunEffort, currentEffortCeiling } from './exec-context.js';
+export { currentRunEffort, currentEffortCeiling, currentRuleFilesOff } from './exec-context.js';
 export { runCollaboration, remainingWorkflowTimeMs } from './collaboration.js';
 export {
   generateWorkflowSessionId,
@@ -136,8 +136,8 @@ export { LESSONS, LESSONS_BLOCK_MAX_CHARS, LESSONS_READ_TIMEOUT_MS, nodeLessonsD
 export type { Lesson, LessonsDeclaration, LessonsReader } from './declared-lessons.js';
 export { registerPersonAnswerTool, personAnswerTool, UNANSWERED_TEXT_MAX_CHARS, UNANSWERED_MAX_LINES, recordPersonLine, markPersonLineAnswered, markPersonLineNoted, unansweredPersonLines, clearPersonLines, unansweredLineFact, unansweredLinesBlock, unansweredLineNote } from './unanswered-lines.js';
 export { UNAVAILABLE_REASON_MAX_CHARS, recordUnavailableTools, clearUnavailableTools, unavailableToolsFor, unavailableToolFact, unavailableToolsBlock } from './unavailable-tools.js';
-export { REPOSITORY_RULE_FILES, WORKSPACE_RULE_FILES, RULE_FILE_MAX_BYTES, RULES_TOTAL_MAX_BYTES, REPOSITORY_RULES_HEADING, RULE_FILE_INDEX_HEADING, WORKSPACE_RULES_HEADING, collectRepositoryRules, renderRepositoryRules, repositoryRulesBlock, preparedFoldersBlock, PREPARED_FOLDERS_HEADING, nativelyLoaded, workingChain, preparedProjectFolders, preparedWorkspaces, ruleFilesInDirectory, ruleLocationOf, ruleFileDeclaration, sendsInFull, maskCredentials, registerCheckoutDirectories, checkoutDirectories } from './repository-rules.js';
-export type { RuleFile, RuleLocation, RuleRoot, PreparedWorkspace } from './repository-rules.js';
+export { REPOSITORY_RULE_FILES, WORKSPACE_RULE_FILES, RULE_FILE_MAX_BYTES, RULES_TOTAL_MAX_BYTES, REPOSITORY_RULES_HEADING, RULE_FILE_INDEX_HEADING, WORKSPACE_RULES_HEADING, collectRepositoryRules, collectRepositoryRulesAsync, renderRepositoryRules, repositoryRulesBlock, repositoryRulesPlan, RULE_FILES_OFF_ENV, parseRuleFilesOff, personPathOf, ruleFileTurnedOff, preparedFoldersBlock, PREPARED_FOLDERS_HEADING, nativelyLoaded, workingChain, preparedProjectFolders, preparedWorkspaces, ruleFilesInDirectory, ruleLocationOf, ruleFileDeclaration, sendsInFull, maskCredentials, registerCheckoutDirectories, checkoutDirectories } from './repository-rules.js';
+export type { RuleFile, RuleLocation, RuleRoot, PreparedWorkspace, RulesPlan } from './repository-rules.js';
 
 // Code generation (compile graph config to runnable JS)
 export { generateWorkflowCode, generateNodeConfigsJson } from './code-generator.js';

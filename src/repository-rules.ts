@@ -72,6 +72,7 @@ import type { Dirent } from 'fs';
 import { join, dirname, relative, resolve, isAbsolute, sep, basename, normalize } from 'path';
 import { spawn, spawnSync } from 'child_process';
 import { markStartup } from './startup-marks.js';
+import { currentRuleFilesOff, RULE_FILES_OFF_ENV } from './exec-context.js';
 
 /**
  * One well-known rule location, relative to a directory:
@@ -1048,7 +1049,10 @@ export function preparedFoldersBlock(env: Record<string, string | undefined> = p
   let folders: PreparedWorkspace[] = [];
   try { folders = preparedWorkspaces(env).filter((w) => w.originalPath); } catch { return ''; }
   if (!folders.length) return '';
-  const outside = [...new Set(preparedWorkspaces(env).flatMap((w) => w.ancestorRuleFiles))];
+  // A rule file the person turned off for this agent is not named here either
+  // (it is still mounted; nothing in the prompt points at it).
+  const off = parseRuleFilesOff(currentRuleFilesOff(env));
+  const outside = [...new Set(preparedWorkspaces(env).flatMap((w) => w.ancestorRuleFiles))].filter((f) => !off.has(f));
   const companion = foldersAttachment(env) === 'companion';
   return [PREPARED_FOLDERS_HEADING,
     ...(companion ? ['These folders are not in your own filesystem: they are in this run\'s folder container, at the directories below. Reach them with run_command (run_workspaces): a shell command run in one of those directories — read, search, git, edit, build, test.'] : []),
@@ -1092,6 +1096,66 @@ function teammateLines(env: Record<string, string | undefined>): string[] {
       + (r.ticketKey ? `, ticket ${one(r.ticketKey)}` : '') + (r.since ? `, since ${one(r.since)}` : '')
       + (Array.isArray(r.repositories) && r.repositories.length ? `, working in ${r.repositories.slice(0, 8).map(one).join(', ')}` : '')),
     ...(t.more ? ['(more are active; list_running_agents lists them all)'] : [])];
+}
+
+/*
+ * RULE FILES THE PERSON TURNED OFF — the agent's own setting (its Settings
+ * page lists the files this collector finds for its folders, each with a
+ * switch). The platform stamps the list on every run of that agent
+ * (`RULE_FILES_OFF`, a JSON array of absolute paths; `ruleFilesOff` on an
+ * in-process child's begin — exec-context currentRuleFilesOff). A file on it
+ * is neither sent in full nor named on the index, and when the node's engine
+ * would load it by itself (codex: AGENTS.md) the engine is told to load none
+ * of its own (`skipNativeRuleFiles`; the files left ON then come in this
+ * block instead). Nothing else changes: default = nothing off = every file,
+ * as before, byte for byte.
+ *
+ * The page lists a file where it is on the PERSON'S disk; inside a run a
+ * prepared folder is a copy at another path. So a file is matched by its own
+ * path or by where it is on the person's disk (personPathOf: the folder's
+ * manifest entry says which folder of theirs the copy is).
+ */
+export { RULE_FILES_OFF_ENV };
+const MAX_RULE_FILES_OFF = 256;
+
+/** The turned-off list as a set of absolute, normalized paths; anything else in it is ignored. PURE. */
+export function parseRuleFilesOff(raw: unknown): Set<string> {
+  let list: unknown = raw;
+  if (typeof raw === 'string') { try { list = JSON.parse(raw); } catch { return new Set(); } }
+  if (!Array.isArray(list)) return new Set();
+  return new Set(list.filter((p): p is string => typeof p === 'string' && isAbsolute(p) && normalize(p) === p && p.length <= 1024)
+    .slice(0, MAX_RULE_FILES_OFF));
+}
+
+/**
+ * Where a path inside this run is on the person's disk: a path under a
+ * prepared folder's run directory, moved to the folder it is a copy of
+ * (`folderPath`, else `originalPath`; for a folder inside a checkout, the
+ * checkout's run root maps to `originalPath`). Any other path is itself. PURE.
+ */
+export function personPathOf(path: string, workspaces: PreparedWorkspace[]): string {
+  const p = resolve(path);
+  for (const w of Array.isArray(workspaces) ? workspaces : []) {
+    const onDisk = w && (w.folderPath || w.originalPath);
+    if (!onDisk || !w.directory) continue;
+    const dir = resolve(w.directory);
+    const pairs: Array<[string, string]> = [[dir, onDisk]];
+    if (w.folderPath && w.originalPath && w.folderPath.startsWith(`${w.originalPath}/`)) {
+      const sub = w.folderPath.slice(w.originalPath.length);
+      if (dir.endsWith(sub)) pairs.push([dir.slice(0, dir.length - sub.length), w.originalPath]);
+    }
+    for (const [inRun, theirs] of pairs) {
+      if (p === inRun) return theirs;
+      if (p.startsWith(inRun + sep)) return `${theirs}/${relative(inRun, p).split(sep).join('/')}`;
+    }
+  }
+  return p;
+}
+
+/** Whether a rule file is on the turned-off list, by its own path or its place on the person's disk. PURE. */
+export function ruleFileTurnedOff(path: string, off: Set<string>, workspaces: PreparedWorkspace[] = []): boolean {
+  if (!off || !off.size) return false;
+  return off.has(path) || off.has(personPathOf(path, workspaces));
 }
 
 /**
@@ -1396,7 +1460,18 @@ export function repositoryRulesBlock(args: { workspace?: string; strategy?: any;
  * repositoryRulesBlock as its pieces (renderRepositoryRulesParts); [] when there are none. Never throws.
  * `identity` says what a path is on disk (default: the filesystem's device + inode, `pathIdentity`).
  */
-type RulesArgs = { workspace?: string; strategy?: any; env?: Record<string, string | undefined>; repositoryRoots?: unknown; identity?: PathIdentity };
+type RulesArgs = { workspace?: string; strategy?: any; env?: Record<string, string | undefined>; repositoryRoots?: unknown; identity?: PathIdentity;
+  /** The turned-off rule files (default: this run's — exec-context currentRuleFilesOff). */
+  ruleFilesOff?: unknown };
+
+/**
+ * What invokeAgent does with the rule files: the block's parts, whether the
+ * node's engine must load none of its own rule files (a file it would load by
+ * itself is turned off — the strategy's `skipNativeRuleFiles` option), and the
+ * paths left out because the person turned them off.
+ */
+export interface RulesPlan { parts: PromptPart[]; skipNativeRuleFiles: boolean; leftOut: string[] }
+const noRules = (): RulesPlan => ({ parts: [], skipNativeRuleFiles: false, leftOut: [] });
 
 /** The working directory and the folders named for this call, as both entry points read them. */
 function rulesInputs({ workspace, repositoryRoots = [] }: RulesArgs): { cwd: string; named: string[] } {
@@ -1407,7 +1482,12 @@ function rulesInputs({ workspace, repositoryRoots = [] }: RulesArgs): { cwd: str
 }
 
 export function repositoryRulesParts(args: RulesArgs = {}): PromptPart[] {
-  return rulesPartsWith(args, new Map());
+  return repositoryRulesPlan(args).parts;
+}
+
+/** repositoryRulesParts with the rest of the plan (RulesPlan). Never throws. */
+export function repositoryRulesPlan(args: RulesArgs = {}): RulesPlan {
+  return rulesPlanWith(args, new Map());
 }
 
 /**
@@ -1432,6 +1512,11 @@ export function repositoryRulesParts(args: RulesArgs = {}): PromptPart[] {
  * ordinary way.
  */
 export async function repositoryRulesPartsAsync(args: RulesArgs = {}): Promise<PromptPart[]> {
+  return (await repositoryRulesPlanAsync(args)).parts;
+}
+
+/** repositoryRulesPartsAsync with the rest of the plan (RulesPlan). Never throws. */
+export async function repositoryRulesPlanAsync(args: RulesArgs = {}): Promise<RulesPlan> {
   const listings: ListingCache = new Map();
   const list = listingReader(listings);
   // The working directory's folders, for the checkout discovery walk (ruleRoots).
@@ -1440,11 +1525,36 @@ export async function repositoryRulesPartsAsync(args: RulesArgs = {}): Promise<P
   // 3.7-7.3 s for its rule files on a loaded box; these marks say
   // which part.
   markStartup('rule folders read ahead');
-  const answers: IgnoreAnswers = new Map();
-  const git = ignoreSessions(answers);
   try {
     const roots = ruleRoots(args, listings);
     markStartup('rule folders walked');
+    const files = await collectAhead(roots, listings, list, args.identity || pathIdentity);
+    return planOfFiles(args, files);
+  } catch {
+    return noRules();
+  } finally {
+    markStartup('repository rules read');
+  }
+}
+
+/**
+ * collectRepositoryRules with what it reads fetched ahead (the folders listed
+ * several at once, one git process per repository asked) — the same files, in
+ * the same order. For a caller that must not block its process while the
+ * folders are read (a host platform listing an agent's rule files for its
+ * page). Never throws for an unreadable file; a root that is not a folder
+ * contributes nothing.
+ */
+export async function collectRepositoryRulesAsync(roots: RuleRoot[], { identity = pathIdentity }: { identity?: PathIdentity } = {}): Promise<RuleFile[]> {
+  const listings: ListingCache = new Map();
+  return collectAhead(roots || [], listings, listingReader(listings), identity, false);
+}
+
+async function collectAhead(roots: RuleRoot[], listings: ListingCache, list: (dir: string, real?: boolean) => Promise<void>, identity: PathIdentity,
+  marks = true): Promise<RuleFile[]> {
+  const answers: IgnoreAnswers = new Map();
+  const git = ignoreSessions(answers);
+  try {
     const ask = ignoreAsker(answers);
     const fetch = async (need: Need): Promise<void> => {
       if ('list' in need) await Promise.all(need.list.map(([dir, real]) => list(dir, real)));
@@ -1452,14 +1562,10 @@ export async function repositoryRulesPartsAsync(args: RulesArgs = {}): Promise<P
     };
     const perRoot = await Promise.all(roots.map((r) => runStepsAhead(rootRuleSteps(r, ask, listings), fetch)));
     git.close();
-    markStartup('rule ignores asked');
-    const files = readRuleFiles(mergeFound(perRoot, args.identity || pathIdentity));
-    return partsOfFiles(args, files);
-  } catch {
-    return [];
+    if (marks) markStartup('rule ignores asked');
+    return readRuleFiles(mergeFound(perRoot, identity));
   } finally {
     git.close();
-    markStartup('repository rules read');
   }
 }
 
@@ -1588,24 +1694,37 @@ function inLiveView(live: string[]): ((dir: string) => boolean) | undefined {
   return (dir: string) => { const d = resolve(dir); return tops.some((t) => d === t || d.startsWith(t + sep)); };
 }
 
-/** The parts for the rule files collected from `roots`. */
-function partsOf(args: RulesArgs, roots: RuleRoot[], listings: ListingCache): PromptPart[] {
-  return partsOfFiles(args, collectRepositoryRules(roots, { identity: args.identity || pathIdentity, listings }));
+/**
+ * The plan for collected rule files, rendered for the node's strategy, minus
+ * the files the person turned off (see parseRuleFilesOff). When a turned-off
+ * file is one the node's engine would load by itself, and the engine can be
+ * told to load none (`strategy.skipsNativeRuleFiles`), it is told so and the
+ * files left on are sent here instead of being "loaded by your engine".
+ */
+function planOfFiles(args: RulesArgs, files: RuleFile[]): RulesPlan {
+  if (!files.length) return noRules();
+  const env = args.env || process.env;
+  const off = parseRuleFilesOff(args.ruleFilesOff !== undefined ? args.ruleFilesOff : currentRuleFilesOff(env));
+  let workspaces: PreparedWorkspace[] = [];
+  if (off.size) { try { workspaces = preparedWorkspaces(env); } catch { workspaces = []; } }
+  const isOff = (f: RuleFile) => ruleFileTurnedOff(f.path, off, workspaces);
+  const kept = off.size ? files.filter((f) => !isOff(f)) : files;
+  const leftOut = off.size ? files.filter(isOff).map((f) => f.path) : [];
+  const cwd = rulesInputs(args).cwd;
+  const nativeNames = args.strategy?.nativeRuleFiles;
+  const skipNativeRuleFiles = leftOut.length > 0 && args.strategy?.skipsNativeRuleFiles === true
+    && [...nativelyLoaded(files, nativeNames, cwd)].some((p) => leftOut.includes(p));
+  const native = skipNativeRuleFiles ? new Set<string>() : nativelyLoaded(kept, nativeNames, cwd);
+  return { parts: kept.length ? renderRepositoryRulesParts(kept, { native }) : [], skipNativeRuleFiles, leftOut };
 }
 
-/** The parts for collected rule files, rendered for the node's strategy. */
-function partsOfFiles(args: RulesArgs, files: RuleFile[]): PromptPart[] {
-  if (!files.length) return [];
-  return renderRepositoryRulesParts(files, { native: nativelyLoaded(files, args.strategy?.nativeRuleFiles, rulesInputs(args).cwd) });
-}
-
-function rulesPartsWith(args: RulesArgs, listings: ListingCache): PromptPart[] {
+function rulesPlanWith(args: RulesArgs, listings: ListingCache): RulesPlan {
   try {
     const roots = ruleRoots(args, listings);
     markStartup('rule folders walked');
-    return partsOf(args, roots, listings);
+    return planOfFiles(args, collectRepositoryRules(roots, { identity: args.identity || pathIdentity, listings }));
   } catch {
-    return [];
+    return noRules();
   } finally {
     // The run's startup timeline (startup-marks.ts): the first model call's rule files are read.
     markStartup('repository rules read');
