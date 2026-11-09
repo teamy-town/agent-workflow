@@ -1204,7 +1204,16 @@ export class WorkflowGraph {
       for (const k of Object.keys(labels)) known.add(k);
     }
 
+    // The branch DECLARES its targets: every label key is a target, in
+    // declaration order. This is the rule; the literals below only ADD to it
+    // (a readable route may return a node it did not label). A route whose
+    // source cannot be read — compiled to bytecode, minified — has no literals
+    // and is still fully described by its labels. Code never has to guess a
+    // judgement out of function text when the declaration already says it.
     const targets = new Set();
+    if (labels && typeof labels === 'object') {
+      for (const k of Object.keys(labels)) targets.add(k);
+    }
     for (const lit of literals) {
       if (known.has(lit)) targets.add(lit);
     }

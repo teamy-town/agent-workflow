@@ -145,7 +145,9 @@ export function validateGraphConfig(config) {
   for (const decisionId of decisionIds) {
     const outgoing = config.edges.filter(e => e.source === decisionId);
     if (outgoing.length === 0) errors.push(`Decision node "${decisionId}" has no outgoing edges`);
-    const hasCode = outgoing.some(e => e.data?.conditionalCode || e.conditionalCode);
+    // A declared label names the route too (labels name the targets), so an edge that
+    // carries one needs no readable code.
+    const hasCode = outgoing.some(e => e.data?.conditionalCode || e.conditionalCode || e.label);
     if (!hasCode) errors.push(`Decision node "${decisionId}" outgoing edges have no conditionalCode`);
   }
 
