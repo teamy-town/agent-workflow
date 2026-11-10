@@ -100,7 +100,7 @@ export { registerNode, getNodeImpl, hasNode, listNodeTypes, getNodeTemplate } fr
 // Chat entry — a person talking to the agent itself (node `chatEntry: true`)
 export { CHAT_ENTRY_FLAG, CHAT_CALL, declaresChatEntry, normalizeChatTurn, renderChatTurn, chatReplyText, chatEntryProblems, CHAT_REPLY_TASTE, CHAT_MESSAGE_MAX, CHAT_CONVERSATION_MAX_ITEMS, CHAT_CONVERSATION_MAX_CHARS, CHAT_ATTACHMENTS_MAX, CHAT_ATTACHMENT_REF_MAX } from './chat-entry.js';
 export type { ChatTurn, ChatLine, ChatAttachment } from './chat-entry.js';
-export { MAIL_ROUND_FLAG, MAIL_ROUND_NODE, MAIL_ROUND_SKILLS, normalizeMailRound, declaresMailboxNode, voiceNodeOf, defaultMailRoundFor, mailRoundPrompt, wakeMinIntervalMs, holdRings, paceAfterMailRound, WAKE_MIN_INTERVAL_SECONDS, WAKE_MIN_INTERVAL_MAX_SECONDS } from './mail-round.js';
+export { MAIL_ROUND_FLAG, MAIL_ROUND_NODE, MAIL_ROUND_SKILLS, normalizeMailRound, declaresMailboxNode, voiceNodeOf, defaultMailRoundFor, mailRoundPrompt, mailRoundSkills, wakeMinIntervalMs, holdRings, paceAfterMailRound, WAKE_MIN_INTERVAL_SECONDS, WAKE_MIN_INTERVAL_MAX_SECONDS } from './mail-round.js';
 // Chat attachments — the host registers the reader that opens attached files.
 export { registerChatAttachmentResolver, getChatAttachmentResolver, resolveChatAttachments, chatAttachmentsUnreadable } from './chat-attachments.js';
 export type { ChatAttachmentResolver, ResolvedChatAttachments, ChatAttachmentImage, ChatAttachmentFile } from './chat-attachments.js';
