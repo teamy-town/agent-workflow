@@ -596,14 +596,29 @@ describe('the run\'s project folders and their access — a standing fact for ev
         liveDirectory: '/workspace/local-project/live/backend', uncommittedOnDisk: { notKnown: 'took too long' } },
     ]);
     const block = preparedFoldersBlock(live);
-    expect(block).toContain('- /Users/example/myapp/mockup → /workspace/local-project/tree/mockup (editable); as it is on disk now: /workspace/local-project/live/mockup (editable; 2 files there not in the commit this run works from)');
-    expect(block).toContain('- /Users/example/myapp → /workspace/local-project/tree (editable; the folder itself, in no Git repository: no commit); as it is on disk now: /workspace/local-project/live (editable)');
-    expect(block).toContain('- /Users/example/backend → /workspace/local-project/tree/backend (read-only); as it is on disk now: /workspace/local-project/live/backend (read-only; files not in the commit: not known (took too long))');
+    expect(block).toContain('- /Users/example/myapp/mockup → /workspace/local-project/tree/mockup (editable); as it is on disk now: /workspace/local-project/live/mockup (2 files there not in the commit this run works from)');
+    expect(block).toContain('- /Users/example/myapp → /workspace/local-project/tree (editable; the folder itself, in no Git repository: no commit); as it is on disk now: /workspace/local-project/live');
+    expect(block).toContain('- /Users/example/backend → /workspace/local-project/tree/backend (read-only); as it is on disk now: /workspace/local-project/live/backend (files not in the commit: not known (took too long))');
     expect(block).toMatch(/may be another person's unfinished edits; it can change while it is read; in a read-only folder, secret files \(\.env\) read as empty/);
     expect(block).toMatch(/Saved work is built from the folder's run directory, not from it/);
     expect(block).not.toMatch(/\b(you must|do not|never|always|should|manager|developer|ask the)\b/i);
     // A manifest with no live view gives exactly the block it gave before.
     expect(preparedFoldersBlock(four)).not.toContain('as it is on disk now');
+  });
+
+  // (a developer run, 16 folders): on a Mac the on-disk directory IS the
+  // left path, and its access IS the folder's — both were repeated on every line.
+  it('a folder whose on-disk directory is its left path says so without repeating the path or the access', () => {
+    const mac = manifest([
+      { originalPath: '/Users/p/zibby/backend', folderPath: '/Users/p/zibby/backend', directory: '/Users/p/.zibby/work/run/backend', access: 'editable',
+        status: 'pending', liveDirectory: '/Users/p/zibby/backend' },
+      { originalPath: '/Users/p/zibby/prd', folderPath: '/Users/p/zibby/prd', directory: '/Users/p/zibby/prd', access: 'read-only',
+        inPlace: true, liveDirectory: '/Users/p/zibby/prd' },
+    ]);
+    const block = preparedFoldersBlock(mac);
+    expect(block).toContain('- /Users/p/zibby/backend → /Users/p/.zibby/work/run/backend (editable; not prepared yet); as it is on disk now: at the left path\n');
+    expect(block).toContain('- /Users/p/zibby/prd → /Users/p/zibby/prd (read-only; the folder itself, in no Git repository: no commit); as it is on disk now: at the left path\n');
+    expect(block).toMatch(/"as it is on disk now" directory is the person's folder itself, in this same container, with the folder's access/);
   });
 
   // : a person's chat

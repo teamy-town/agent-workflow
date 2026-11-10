@@ -1067,9 +1067,12 @@ export function preparedFoldersBlock(env: Record<string, string | undefined> = p
     ...folders.map((w) => (w.selectable
       ? `- ${w.folderPath || w.originalPath} (listed for choosing; not prepared in this run, no files here)`
       : `- ${w.folderPath || w.originalPath} → ${w.directory} (${w.access}${w.pending ? '; not prepared yet' : ''}${w.inPlace ? '; the folder itself, in no Git repository: no commit' : ''})`)
-      + (w.liveDirectory ? `; as it is on disk now: ${w.liveDirectory} (${w.access}${w.uncommitted
-        ? ('count' in w.uncommitted ? `; ${w.uncommitted.count} file${w.uncommitted.count === 1 ? '' : 's'} there not in the commit this run works from`
-          : `; files not in the commit: not known (${w.uncommitted.notKnown})`) : ''})` : '')),
+      // Each fact once, and on
+      // a Mac the on-disk directory IS the left path — 16 folders repeated both,
+      // ~1.4k characters re-sent after every compaction.
+      + (w.liveDirectory ? `; as it is on disk now: ${w.liveDirectory === (w.folderPath || w.originalPath) ? 'at the left path' : w.liveDirectory}${w.uncommitted
+        ? ` (${'count' in w.uncommitted ? `${w.uncommitted.count} file${w.uncommitted.count === 1 ? '' : 's'} there not in the commit this run works from`
+          : `files not in the commit: not known (${w.uncommitted.notKnown})`})` : ''}` : '')),
     ...(folders.some((w) => w.liveDirectory) ? [`A folder's "as it is on disk now" directory is the person's folder itself, in ${companion ? 'the same folder container' : 'this same container'}, with the folder\'s access: it includes files that are not in the commit this run works from, which may be another person\'s unfinished edits; it can change while it is read; in a read-only folder, secret files (.env) read as empty. Saved work is built from the folder\'s run directory, not from it; a file needed from it can be copied across with ordinary shell tools.`] : []),
     ...(folders.some(w => w.pending) ? [`For a folder marked not prepared yet, call prepare_workspaces only when you need its files, using its id from list_workspaces. The tool returns their ready paths; then ${companion ? 'reach them with run_command' : 'use your native file and command tools there'}. A conversation that needs no files needs no preparation.`] : []),
     ...teammateLines(env),
