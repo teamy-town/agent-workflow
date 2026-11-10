@@ -127,6 +127,18 @@ describe('a chat turn', () => {
     expect(res).not.toHaveProperty('chatReplies');
   });
 
+  it('Fast reaches only the declared chat call; Standard explicitly clears an authored tier', async () => {
+    for (const tier of ['fast', null]) {
+      const calls: any[] = [];
+      const invoke = vi.fn(async (_p, _c, opts) => { calls.push(opts); return opts.schema ? { raw: '{}', structured: {} } : 'ok'; });
+      await chatGraph(invoke).run({}, { chat: { message: 'hi' }, nodeConfigs: { manager: { serviceTier: tier }, settle: { serviceTier: 'fast' } } });
+      expect(calls[0].serviceTier).toBe(tier);
+      calls.length = 0;
+      await chatGraph(invoke).run({}, { nodeConfigs: { manager: { serviceTier: 'fast' } } });
+      expect(calls[0]).not.toHaveProperty('serviceTier');
+    }
+  });
+
   it('refuses a chat turn for a graph that declares no chat entry, before any node runs', async () => {
     const invokeAgent = vi.fn();
     await expect(chatGraph(invokeAgent, { declare: false }).run({}, { chat: { message: 'hi' } }))
@@ -177,14 +189,16 @@ describe('a chat run that goes on working after its answer (same run, same conve
     const calls: any[] = [];
     const invokeAgent = vi.fn(async (prompt, _ctx, opts) => { calls.push({ prompt, opts }); return opts?.schema ? { raw: '{}', structured: { tickets: 3 } } : 'On it — planning now.'; });
     const onChatReply = vi.fn(async () => {});
-    const res: any = await workingGraph(invokeAgent).run({}, { chat: { message: 'plan the tickets please' } }, { onChatReply });
+    const res: any = await workingGraph(invokeAgent).run({}, { chat: { message: 'plan the tickets please' }, nodeConfigs: { planner: { serviceTier: 'fast' } } }, { onChatReply });
     expect(res.success).toBe(true);
     expect(calls).toHaveLength(2);
     expect(calls[0].opts[CHAT_CALL]).toBe(true);
+    expect(calls[0].opts.serviceTier).toBe('fast');
     expect(calls[0].opts.schema).toBeUndefined();
     // the work call: its schema, its own prompt, not marked a chat call, no reply delivered for it
     expect(calls[1].opts.schema).toEqual({ plan: 'schema' });
     expect(calls[1].opts[CHAT_CALL]).toBe(false);
+    expect(calls[1].opts).not.toHaveProperty('serviceTier');
     expect(calls[1].prompt).toBe('Plan the PRD.');
     expect(res.state.write.output.told).toBe(true);
     expect(onChatReply.mock.calls.map((c) => c[0])).toEqual([

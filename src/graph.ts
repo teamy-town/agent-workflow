@@ -1916,6 +1916,10 @@ export class WorkflowGraph {
           ...declaredInvokeOpts,  // the node's own declarations (compactAtTokens, helpers)
           ...opts,                // caller-explicit overrides
           ...(isChatCall ? { schema: undefined, [CHAT_CALL]: true } : {}),
+          // Premium processing belongs only to the declared chat answer.
+          // Standard (null) must also replace an older explicit Fast option.
+          ...(isChatCall && Object.prototype.hasOwnProperty.call(allNodeConfigs[currentNode] || {}, 'serviceTier')
+            ? { serviceTier: allNodeConfigs[currentNode].serviceTier } : {}),
           ...(attachmentFiles?.images.length ? { images: [...(Array.isArray(opts.images) ? opts.images : []), ...attachmentFiles.images] } : {}),
           // Engine always wins. A person's Stop OR the run's deadline.
           signal: modelSignal,

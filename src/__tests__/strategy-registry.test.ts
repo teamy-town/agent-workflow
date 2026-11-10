@@ -5,6 +5,7 @@
  * vi.resetModules() so registrations from one test do not leak into another.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { z } from 'zod';
 
 class FakeStrategy {
   constructor(name, { canHandle = () => true, invoke } = {}) {
@@ -35,6 +36,22 @@ async function loadFreshRegistry() {
 }
 
 describe('strategy-registry', () => {
+  it('955 declared chat Fast and Standard reach the selected strategy unchanged', async () => {
+    const { registerStrategy, invokeAgent } = await loadFreshRegistry();
+    const { WorkflowGraph } = await import('../graph.js');
+    const received: any[] = [];
+    registerStrategy(new FakeStrategy('codex', { invoke: async (_prompt, options) => { received.push(options); return 'ok'; } }));
+    for (const tier of ['fast', null]) {
+      const graph = new WorkflowGraph({ invokeAgent });
+      graph.addNode('generic-reply', { name: 'generic-reply', chatEntry: true, prompt: () => 'reply', outputSchema: z.object({ result: z.string() }),
+        async execute(ctx) { return { result: await ctx.invokeAgent({}, { prompt: 'reply', model: 'gpt-6.1-sol', preferredAgent: 'codex' }) }; } });
+      graph.setEntryPoint('generic-reply'); graph.addEdge('generic-reply', 'END');
+      await graph.run({}, { chat: { message: 'hello' }, agentType: 'codex', models: { 'generic-reply': 'gpt-6.1-sol' },
+        nodeConfigs: { 'generic-reply': { agent: 'codex', model: 'gpt-6.1-sol', effort: null, serviceTier: tier } } });
+      expect(received.at(-1).serviceTier).toBe(tier);
+      expect(received.at(-1).model).toBe('gpt-6.1-sol');
+    }
+  });
   let originalAgentType;
 
   beforeEach(() => {
