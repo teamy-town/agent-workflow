@@ -120,7 +120,8 @@ export { validateStoreDefs, STORE_NAME_REGEX } from './stores.js';
 
 // Agent strategy system
 export { AgentStrategy } from './agents/base.js';
-export { registerStrategy, listStrategies, getAgentStrategy, prepareAgentStrategy, invokeAgent, resolveInvocationModel, nodeOwnAgent, requireNodeModel, resolveInvocationExtras, declaredInvocationSkills, refuseUnloadablePlugins, resolveInvocationEffort, EFFORT_LEVELS, normalizeEffort, DEFAULT_EFFORT_CEILING, effortCeiling, clampEffort, nodeOverrideInstructions, nodeReadsWorkspace, WORKSPACE_READ_TOOLS } from './strategy-registry.js';
+export { registerStrategy, listStrategies, getAgentStrategy, prepareAgentStrategy, invokeAgent, prepareInvocationOptions, resolveInvocationModel, nodeOwnAgent, requireNodeModel, resolveInvocationExtras, declaredInvocationSkills, refuseUnloadablePlugins, resolveInvocationEffort, EFFORT_LEVELS, normalizeEffort, DEFAULT_EFFORT_CEILING, effortCeiling, clampEffort, nodeOverrideInstructions, nodeReadsWorkspace, WORKSPACE_READ_TOOLS } from './strategy-registry.js';
+export type { InvocationOptions, PrepareInvocationOptionsInput, PrepareInvocationOptionsHook } from './strategy-registry.js';
 
 // Repository rules — the rule files a repository's owner keeps in it, delivered
 // to every model node the same way whatever its vendor (repository-rules.ts).

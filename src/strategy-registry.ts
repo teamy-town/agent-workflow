@@ -14,7 +14,7 @@
 
 import { AgentStrategy } from './agents/base.js';
 import { logger } from './logger.js';
-import { getSkill, skillPromptText, searchedSkillIds, withEveryModelStepSkills } from './skill-registry.js';
+import { getSkill, skillEnabledForAgent, skillPromptText, searchedSkillIds, withEveryModelStepSkills } from './skill-registry.js';
 import { currentRunEffort, currentEffortCeiling, currentRuleFilesOff } from './exec-context.js';
 import { repositoryRulesPlanAsync, preparedFoldersBlock, parseRuleFilesOff } from './repository-rules.js';
 import { runDeadlineSentence } from './run-deadline.js';
@@ -292,6 +292,51 @@ export function resolveInvocationExtras({ options = {}, stateView = {}, context 
   };
 }
 
+/** Open strategy options, including invocation-local fields contributed by skills. */
+export type InvocationOptions = Record<string, any>;
+
+/** Inputs are borrowed read-only, including nested values; return a patch instead of mutating them. */
+export interface PrepareInvocationOptionsInput {
+  /** This call's options, after resolveInvocationExtras (including everyModelStep skills). */
+  options: Readonly<InvocationOptions>;
+  /** Plain state snapshot, normalized by the caller (not a WorkflowState instance). */
+  stateView: Readonly<Record<string, any>>;
+  context: Readonly<Record<string, any>>;
+}
+
+/**
+ * Optional skill.prepareInvocationOptions hook. Runs once per invokeAgent,
+ * before the vendor/MCP call, never on vendor-internal continuations. Later
+ * skills see earlier patches and win on key collisions (shallow merge).
+ * Return null/undefined for no change. Rejections propagate to the caller.
+ * Keep facts and patches local to this call: do not mutate the inputs, shared
+ * skill definitions, process.env, or options retained by another invocation.
+ * This does not replace graph's per-node invokeAgentOptions/session lifecycle.
+ */
+export type PrepareInvocationOptionsHook = (
+  input: PrepareInvocationOptionsInput,
+) => Partial<InvocationOptions> | null | void | Promise<Partial<InvocationOptions> | null | void>;
+
+/**
+ * Shared preparation for engine and core callers. Call exactly once with the
+ * resolved invocation options, before building MCP servers or invoking a vendor.
+ * Resolves the supplied skill ids in order through the existing registry and
+ * permission gate. Never caches preparation or writes to the inputs/registry;
+ * even a call without hooks gets a fresh options object with unchanged content.
+ */
+export async function prepareInvocationOptions({ options, stateView, context }: PrepareInvocationOptionsInput): Promise<InvocationOptions> {
+  let prepared = { ...options };
+  const skills = Array.isArray(options.skills) ? [...options.skills] : [];
+  for (const id of skills) {
+    const skill = getSkill(id);
+    const hook: PrepareInvocationOptionsHook | undefined = skill?.prepareInvocationOptions;
+    if (typeof hook !== 'function' || !skillEnabledForAgent(skill, id)) continue;
+    const patch = await hook({ options: prepared, stateView, context });
+    if (patch && typeof patch === 'object') prepared = { ...prepared, ...patch };
+  }
+  return prepared;
+}
+
 /**
  * A node that declares a PLUGIN BUNDLE runs only on an engine that loads it.
  *
@@ -437,13 +482,17 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
     ceiling: currentEffortCeiling(),
   });
 
-  const finalOptions: any = {
-    ...options,
-    model,
-    ...(effort ? { effort } : {}),
-    ...resolveInvocationExtras({ options, stateView, context }),
-    config,
-  };
+  const finalOptions = await prepareInvocationOptions({
+    options: {
+      ...options,
+      model,
+      ...(effort ? { effort } : {}),
+      ...resolveInvocationExtras({ options, stateView, context }),
+      config,
+    },
+    stateView,
+    context: ctx,
+  });
   refuseUnloadablePlugins(strategy, finalOptions.plugins, options.nodeName);
 
   // THE PROMPT AND THE PARTS IT IS MADE OF, built together: every addition
