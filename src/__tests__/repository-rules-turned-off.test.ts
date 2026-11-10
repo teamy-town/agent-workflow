@@ -64,11 +64,11 @@ describe('a turned-off rule file is left out of the block', () => {
     expect(block).toContain('DESIGN_GUIDANCE');
     expect(block).toContain('READ_CLAUDE_MD');
     expect(plan.leftOut).toEqual([join(ws, 'CLAUDE.md')]);
-    const folders = preparedFoldersBlock(env({ [RULE_FILES_OFF_ENV]: off }));
-    expect(folders).not.toContain(join(ws, 'CLAUDE.md'));
-    expect(folders).toContain(join(ws, 'AGENTS.md'));
-    // Default: both are named.
-    expect(preparedFoldersBlock(env())).toContain(join(ws, 'CLAUDE.md'));
+    // The folders block names no rule file, on or off.
+    for (const folders of [preparedFoldersBlock(env({ [RULE_FILES_OFF_ENV]: off })), preparedFoldersBlock(env())]) {
+      expect(folders).not.toContain(join(ws, 'CLAUDE.md'));
+      expect(folders).not.toContain(join(ws, 'AGENTS.md'));
+    }
   });
 
   it('a file in the prepared folder is turned off by where it is on the PERSON\'S disk, though the run reads a copy', () => {

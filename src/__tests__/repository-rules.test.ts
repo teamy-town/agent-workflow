@@ -257,31 +257,34 @@ describe('invokeAgent delivers the block', () => {
     return { reg, Fake };
   }
 
-  it('every vendor gets the rules; the operator override stays last; a node with no repository is byte-identical', async () => {
+  // THE PLATFORM HANDS OUT NO INSTRUCTION FILES: no vendor's
+  // prompt carries a "# Repository rules" section; a file left on is in the
+  // folder for the agent to find. A/B: before, both prompts carried CLAUDE_RULE.
+  it('no vendor is handed the rules; an engine that loads a turned-off AGENTS.md itself is told to load none', async () => {
     const { reg, Fake } = await registry();
     const claudeLike = new Fake('alpha');
     const codexLike = new Fake('beta', ['AGENTS.md']);
+    Object.defineProperty(codexLike, 'skipsNativeRuleFiles', { get: () => true });
+    let told: any = null;
+    codexLike.invoke = async function (this: any, prompt: string, options: any) { this.captured = prompt; told = options; return 'ok'; } as any;
     reg.registerStrategy(claudeLike);
     reg.registerStrategy(codexLike);
     const r = repo();
     put(join(r, 'CLAUDE.md'), 'CLAUDE_RULE');
     put(join(r, 'AGENTS.md'), 'AGENTS_RULE');
-    const state = { workspace: r, _currentNodeConfig: { extraPromptInstructions: 'OPERATOR_OVERRIDE' } };
-
+    const state = { workspace: r };
     await reg.invokeAgent('task', { preferredAgent: 'alpha', state }, { model: 'm' });
-    expect(claudeLike.captured).toContain(REPOSITORY_RULES_HEADING);
-    expect(claudeLike.captured).toContain('CLAUDE_RULE');
-    expect(claudeLike.captured).toContain('AGENTS_RULE');
-    expect(claudeLike.captured!.indexOf('CLAUDE_RULE')).toBeLessThan(claudeLike.captured!.indexOf('OPERATOR_OVERRIDE'));
-
-    await reg.invokeAgent('task', { preferredAgent: 'beta', state }, { model: 'm' });
-    expect(codexLike.captured).toContain('CLAUDE_RULE');
-    expect(codexLike.captured).not.toContain('AGENTS_RULE');
-
-    const empty = join(base, 'empty');
-    mkdirSync(empty, { recursive: true });
-    await reg.invokeAgent('task', { preferredAgent: 'alpha', state: { workspace: empty } }, { model: 'm' });
     expect(claudeLike.captured).toBe('task');
+    await reg.invokeAgent('task', { preferredAgent: 'beta', state }, { model: 'm' });
+    expect(codexLike.captured).toBe('task');
+    expect(told?.skipNativeRuleFiles).not.toBe(true);
+    const before = process.env.RULE_FILES_OFF;
+    process.env.RULE_FILES_OFF = JSON.stringify([join(r, 'AGENTS.md')]);
+    try {
+      await reg.invokeAgent('task', { preferredAgent: 'beta', state }, { model: 'm' });
+      expect(codexLike.captured).toBe('task');
+      expect(told?.skipNativeRuleFiles).toBe(true);
+    } finally { if (before === undefined) delete process.env.RULE_FILES_OFF; else process.env.RULE_FILES_OFF = before; }
   });
 });
 
@@ -560,32 +563,23 @@ describe('the run\'s project folders and their access — a standing fact for ev
     expect(block.split('\n')).toHaveLength(2 + 4);
   });
 
-  it('the files mounted OUTSIDE the folders — the rule files above them and the documents those link to — are named, at their own paths', () => {
-    // The block said "Paths outside these folders are unavailable here." while the
-    // runner mounts the workspace's rule files and the documents they link to at
-    // their own paths. An agent told to read ENGINEERING_STANDARDS.md first
-    // looked for it under the folders, did not find it and reported blocked;
-    // the file was mounted at /Users/…/ENGINEERING_STANDARDS.md the whole time.
+  it('the files mounted OUTSIDE the folders are named nowhere, and the run is not told every outside path is unavailable', () => {
+    // the platform hands out no instruction files. The
+    // rule files above the folders that the agent's setting leaves on (and the
+    // documents they link to) are mounted at their own paths, unnamed; saying
+    // "Paths outside these folders are unavailable here." would be false.
     const withRules = manifest([
       { originalPath: '/Users/example/app/selfhosted', directory: '/workspace/local-project/tree/selfhosted', isPrimary: true, access: 'editable',
         ancestorRuleFiles: ['/Users/example/app/AGENTS.md', '/Users/example/app/ENGINEERING_STANDARDS.md'] },
       { originalPath: '/Users/example/app/backend', directory: '/workspace/local-project/tree/backend', access: 'read-only',
-        ancestorRuleFiles: ['/Users/example/app/AGENTS.md', '/Users/example/app/ENGINEERING_STANDARDS.md', '/Users/example/app/'] },
+        ancestorRuleFiles: ['/Users/example/app/AGENTS.md', '/Users/example/app/'] },
     ]);
     const block = preparedFoldersBlock(withRules);
-    // The unconditional sentence is not said when it is not true.
-    expect(block).not.toContain('Paths outside these folders are unavailable here.');
-    expect(block).toContain('Paths outside these folders are unavailable here, except the files listed after the folders');
-    // Each file once, in the runner's order, after the folders.
-    const lines = block.split('\n');
-    expect(lines.slice(5)).toEqual([
-      '- /Users/example/app/AGENTS.md',
-      '- /Users/example/app/ENGINEERING_STANDARDS.md',
-      '- /Users/example/app/',
-    ]);
-    expect(lines[4]).toMatch(/at the same path as on the person's computer and read-only/);
-    expect(block).not.toMatch(/\b(you must|do not|never|always|should|manager|developer|ask the)\b/i);
-    // No such file, the sentence stands and nothing is added (byte-identical to before).
+    expect(block).not.toContain('Paths outside these folders are unavailable here');
+    expect(block).not.toContain('AGENTS.md');
+    expect(block).not.toContain('north-star.md');
+    expect(block.split('\n')).toHaveLength(4);
+    // No such file, the sentence stands (byte-identical to before).
     expect(preparedFoldersBlock(four)).toContain('Paths outside these folders are unavailable here. ');
   });
 

@@ -15,8 +15,8 @@
 import { AgentStrategy } from './agents/base.js';
 import { logger } from './logger.js';
 import { getSkill, skillPromptText, searchedSkillIds, withEveryModelStepSkills } from './skill-registry.js';
-import { currentRunEffort, currentEffortCeiling } from './exec-context.js';
-import { repositoryRulesPlanAsync, preparedFoldersBlock } from './repository-rules.js';
+import { currentRunEffort, currentEffortCeiling, currentRuleFilesOff } from './exec-context.js';
+import { repositoryRulesPlanAsync, preparedFoldersBlock, parseRuleFilesOff } from './repository-rules.js';
 import { runDeadlineSentence } from './run-deadline.js';
 import { unansweredLinesBlock } from './unanswered-lines.js';
 import { unavailableToolsBlock } from './unavailable-tools.js';
@@ -596,24 +596,17 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
   const preparedFolders = preparedFoldersBlock();
   if (preparedFolders) add('project folders', `\n\n${preparedFolders}`);
 
-  // THE REPOSITORY'S OWN RULES (CLAUDE.md, AGENTS.md, …) — every model node,
-  // every vendor, the same block; '' when the node works in no repository.
-  // Placed before the operator's override block, which stays last and wins.
-  // One function for both invokeAgent paths (repository-rules.ts).
-  // Its folders are read ahead in parallel (repositoryRulesPartsAsync); the parts are repositoryRulesParts' own.
-  // A node that hands over standing text gets them WITH it (after the skill
-  // pages): the rule files are the same on every call, and in front of the
-  // per-run project folders above they are part of the prefix a provider
-  // caches : ~36k characters of
-  // rule files re-sent uncached on every chat turn). Without standing text:
-  // here in the prompt, exactly as before.
-  // A file the person turned off for this agent (its Settings) is in neither;
-  // when the node's engine would load one by itself, it is told to load none of
-  // its own (`skipNativeRuleFiles`) and the files left on come in this block.
-  const rules = await repositoryRulesPlanAsync({ workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots });
-  for (const p of rules.parts) {
-    addStandingOrPrompt(p.key, `\n\n${p.text}`);
-  }
+  // NO INSTRUCTION FILES ARE HANDED OUT: no "# Repository
+  // rules" section, in full or by name. A rule file the agent's setting leaves
+  // on is in the run's copy of its folder for the agent to find like any file;
+  // one turned off is not there (selfhosted local-projects/rule-file-list.js
+  // decides both). Only this is still decided here: a node engine that would
+  // load a turned-off file by itself (codex: AGENTS.md) loads none of its own
+  // (`skipNativeRuleFiles`). Nothing turned off, or an engine that loads none
+  // by itself: no folder is walked.
+  const rules = strategy?.skipsNativeRuleFiles === true && parseRuleFilesOff(currentRuleFilesOff()).size
+    ? await repositoryRulesPlanAsync({ workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots })
+    : { parts: [], skipNativeRuleFiles: false, leftOut: [] as string[] };
   if (rules.leftOut.length) logger.info(`[workflow] rule files turned off in this agent's settings, left out: ${rules.leftOut.join(', ')}`);
   if (rules.skipNativeRuleFiles) finalOptions.skipNativeRuleFiles = true;
 

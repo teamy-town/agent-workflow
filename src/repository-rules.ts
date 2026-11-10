@@ -1049,15 +1049,17 @@ export function preparedFoldersBlock(env: Record<string, string | undefined> = p
   let folders: PreparedWorkspace[] = [];
   try { folders = preparedWorkspaces(env).filter((w) => w.originalPath); } catch { return ''; }
   if (!folders.length) return '';
-  // A rule file the person turned off for this agent is not named here either
-  // (it is still mounted; nothing in the prompt points at it).
+  // The platform hands out no instruction files: the
+  // rule files above the folders that the agent's setting leaves on are in
+  // the run at their own paths, named nowhere — so the run is not told that
+  // every path outside its folders is unavailable.
   const off = parseRuleFilesOff(currentRuleFilesOff(env));
   const outside = [...new Set(preparedWorkspaces(env).flatMap((w) => w.ancestorRuleFiles))].filter((f) => !ruleFileTurnedOff(f, off));
   const companion = foldersAttachment(env) === 'companion';
   return [PREPARED_FOLDERS_HEADING,
     ...(companion ? ['These folders are not in your own filesystem: they are in this run\'s folder container, at the directories below. Reach them with run_command (run_workspaces): a shell command run in one of those directories — read, search, git, edit, build, test.'] : []),
     (folders.some(w => w.pending) ? 'The left path is on the person\'s computer; the right path is its location in this run. Folders marked not prepared yet have no files there until you request them. ' : 'The left path is on the person\'s computer; the right path is its prepared copy in this run. Files beneath each left path are beneath the matching right path. ')
-    + (outside.length ? 'Paths outside these folders are unavailable here, except the files listed after the folders. ' : 'Paths outside these folders are unavailable here. ')
+    + (outside.length ? '' : 'Paths outside these folders are unavailable here. ')
     + 'The word after each folder is its access as this run was given it when it started: editable — files there can be changed and saved work can land in it; read-only — it is mounted read-only: it can be read, not changed, and saved work cannot land in it.',
     // An entry listed only for choosing has no folder in this run: it is said
     // as what it is, never as a prepared path (it used to read as "prepared,
@@ -1070,10 +1072,6 @@ export function preparedFoldersBlock(env: Record<string, string | undefined> = p
           : `; files not in the commit: not known (${w.uncommitted.notKnown})`) : ''})` : '')),
     ...(folders.some((w) => w.liveDirectory) ? [`A folder's "as it is on disk now" directory is the person's folder itself, in ${companion ? 'the same folder container' : 'this same container'}, with the folder\'s access: it includes files that are not in the commit this run works from, which may be another person\'s unfinished edits; it can change while it is read; in a read-only folder, secret files (.env) read as empty. Saved work is built from the folder\'s run directory, not from it; a file needed from it can be copied across with ordinary shell tools.`] : []),
     ...(folders.some(w => w.pending) ? [`For a folder marked not prepared yet, call prepare_workspaces only when you need its files, using its id from list_workspaces. The tool returns their ready paths; then ${companion ? 'reach them with run_command' : 'use your native file and command tools there'}. A conversation that needs no files needs no preparation.`] : []),
-    ...(outside.length ? [
-      'These files are in this run too, each at the same path as on the person\'s computer and read-only — the workspace\'s rule files and the documents they link to:',
-      ...outside.map((f) => `- ${f}`),
-    ] : []),
     ...teammateLines(env),
   ].join('\n');
 }
