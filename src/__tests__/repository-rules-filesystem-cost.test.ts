@@ -6,7 +6,7 @@
  * filesystem question costs ~0.3 ms; asking about each well-known rule
  * location's path separately was ~16 questions per folder, and a product
  * owner's chat turn spent 2.9–4.1 s in this walk before its model was asked
- * . The answer
+ * The answer
  * must not change — repository-rules.test.ts holds that; this file holds the cost.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';

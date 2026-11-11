@@ -928,7 +928,7 @@ function dirSizeBytes(dir) {
  * next dispatch of that child runs from it again, without re-extracting) and
  * every folder a child run is using right now. Eviction never removes one of
  * these. The holders are all in THIS process: the cache is this process's own
- * /tmp (a self-host run has a container of its own; a cloud warm-pool task
+ * /tmp (a run has a container of its own, or a warm-pool task
  * runs one parent at a time, its children in-process), so this in-process
  * hold is the whole answer — a host platform call per eviction could only
  * repeat it, a network round-trip later.

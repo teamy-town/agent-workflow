@@ -5,7 +5,7 @@
  * rate limited) are retried after 5 s, 10 s, 1 min, 5 min and 10 min — five
  * retries — instead of the network schedule's two (5 s, 10 s), which a
  * minutes-long outage always outlasted (a run, a ticket;
- * . Three rules:
+ * Three rules:
  *   1. the long schedule only for the capacity kind; a dropped stream keeps 5 s / 10 s;
  *   2. the run's deadline wins — a wait that would end past it is not started;
  *   3. a Stop during a wait ends it at once.

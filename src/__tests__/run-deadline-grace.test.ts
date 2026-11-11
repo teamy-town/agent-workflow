@@ -5,7 +5,7 @@
  * Case: developer a run (a ticket, ). The model answered
  * 9 s before the run deadline; the step that records the answer started ~4 s
  * after it; the process was killed at the deadline and the run's structured
- * result was recorded as `{}` .
+ * result was recorded as `{}`.
  *
  * The graph here is the shape of that run: a model step, then a code step that
  * records its answer. The deadline is stated explicitly (`deadlineAtMs`, the

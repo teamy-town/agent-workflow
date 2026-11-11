@@ -238,7 +238,6 @@ export class Node {
       // spent. Seen: a developer run cut off after 30 minutes by
       // "Selected model is at capacity" was reported failed by its node; the
       // transient budget below never saw the error
-      // .
       // Non-enumerable: a node that spreads its context does not copy it.
       if (context && typeof context === 'object') {
         Object.defineProperty(context, 'willRetry', {

@@ -1,7 +1,6 @@
 /**
  * The run's startup timeline (startup-marks.ts): one line, the
  * first mark of each step, in order, in seconds after the container started.
- * 
  */
 import { describe, it, expect } from 'vitest';
 import { startupTimelineLine, containerLeadMs, markStartup, STARTUP_MARK_PREFIX } from '../startup-marks.js';

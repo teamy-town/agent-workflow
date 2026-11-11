@@ -400,7 +400,7 @@ export function ruleFilesInDirectory(dir: string, listings: ListingCache | null 
   // filesystem about each location's path instead was ~16 lstat calls per
   // folder: on a project folder mounted into a run container (a shared host
   // folder, ~0.3 ms a call) the walk of ~450 folders took 2.9–4.1 s before
-  // every model call .
+  // every model call.
   // A listed entry's type is the filesystem's own (a symlink is never a file
   // or a folder here), the same answer lstat gives. A folder that cannot be
   // listed falls back to asking path by path, as before.
@@ -1067,7 +1067,8 @@ export function preparedFoldersBlock(env: Record<string, string | undefined> = p
     ...folders.map((w) => (w.selectable
       ? `- ${w.folderPath || w.originalPath} (listed for choosing; not prepared in this run, no files here)`
       : `- ${w.folderPath || w.originalPath} → ${w.directory} (${w.access}${w.pending ? '; not prepared yet' : ''}${w.inPlace ? '; the folder itself, in no Git repository: no commit' : ''})`)
-      // Each fact once, and on
+      // Each fact once: the on-disk
+      // directory's access IS the folder's (the sentence below says so), and on
       // a Mac the on-disk directory IS the left path — 16 folders repeated both,
       // ~1.4k characters re-sent after every compaction.
       + (w.liveDirectory ? `; as it is on disk now: ${w.liveDirectory === (w.folderPath || w.originalPath) ? 'at the left path' : w.liveDirectory}${w.uncommitted

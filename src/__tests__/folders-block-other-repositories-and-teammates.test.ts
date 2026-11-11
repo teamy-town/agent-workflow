@@ -1,6 +1,6 @@
 /**
  * THE FOLDERS BLOCK: A REPOSITORY THE RUN CAN STILL PREPARE, AND WHO ELSE WAS
- * WORKING WHEN IT STARTED .
+ * WORKING WHEN IT STARTED.
  *
  * 100's developer read backend as "listed for choosing; not prepared in this
  * run, no files here", asked its manager for a work area, and cloned backend by

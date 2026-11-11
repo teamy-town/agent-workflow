@@ -6,7 +6,6 @@
  * marks (the CLI, this engine, the model strategies in @zibby/core) and every
  * runner that prints (@zibby/cli `run-workflow`; any other host may call
  * startupTimelineLine the same way).
- * → 
  *
  * Only the FIRST mark of a step counts: a later node's model call is not
  * startup, and a long run must not grow the timeline.

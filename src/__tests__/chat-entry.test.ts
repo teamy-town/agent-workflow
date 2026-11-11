@@ -91,7 +91,7 @@ describe('a chat turn', () => {
     expect(opts.schema).toBeUndefined();
     expect(opts.nodeName).toBe('manager');
     // The strategy is told this call is the chat call (a fact it may use to
-    // present the same tools more lightly — .
+    // present the same tools more lightly.
     expect(CHAT_CALL).toBe('chatCall');
     expect(opts[CHAT_CALL]).toBe(true);
 

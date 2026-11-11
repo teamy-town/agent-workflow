@@ -5,7 +5,7 @@
  * The walk lists one folder at a time and waits for each. On a project folder
  * mounted into a run container (~1 ms a listing, more on a loaded machine) a
  * product owner's chat turn listed ~700 folders: 0.6–2.0 s before its first
- * model request .
+ * model request.
  * repositoryRulesPartsAsync lists them ahead, several at once, then runs the
  * same walk on those listings. This file holds both halves: the parts are
  * exactly repositoryRulesParts', and the walk itself no longer waits on the

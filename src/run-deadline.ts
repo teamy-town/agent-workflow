@@ -2,7 +2,7 @@
  * THE RUN'S DEADLINE — the run's time limit, as a clock time, and the few
  * facts derived from it that reach the agent.
  *
- * THE LIMIT DOES NOT STOP THE RUN. team designer runs
+ * THE LIMIT DOES NOT STOP THE RUN. Long design runs
  * 9d6b8743 and a run were each stopped at their 25-minute limit
  * while their reviewer was still working, and each retry restarted the step.
  * Since then a run that reaches its limit is TOLD, through the same in-run door

@@ -583,7 +583,7 @@ describe('the run\'s project folders and their access — a standing fact for ev
     expect(preparedFoldersBlock(four)).toContain('Paths outside these folders are unavailable here. ');
   });
 
-  // : every
+  // every
   // folder is also shown as it is on disk, beside where the run works. A/B:
   // before, the block named only the run directory.
   it('each folder names where the run works AND where the person\'s folder is as it is on disk now, with what is not in the commit', () => {
@@ -621,7 +621,7 @@ describe('the run\'s project folders and their access — a standing fact for ev
     expect(block).toMatch(/"as it is on disk now" directory is the person's folder itself, in this same container, with the folder's access/);
   });
 
-  // : a person's chat
+  // a person's chat
   // turn on a shared worker has its folders in a companion container, reached
   // with run_command. Told "the right path is its prepared copy in this run"
   // alone, it would look in its own filesystem and find nothing.

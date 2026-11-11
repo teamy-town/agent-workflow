@@ -240,8 +240,7 @@ export function listSkillIds() {
  * not its node lists it. Example: the tool a person hears a run through. A
  * person's line is delivered into WHICHEVER step is running, and the engine
  * tells that step to answer with the tool — a step whose node had not
- * declared it was told to use a tool it did not have ,
- * six lines answered in plain text the person never saw).
+ * declared it was told to use a tool it did not have.
  *
  * Only the TOOLS come for free. The skill's page (its promptFragment) is still
  * added only where a node declares the skill: a page written for a node that

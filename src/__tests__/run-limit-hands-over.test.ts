@@ -1,8 +1,7 @@
 /**
- * THE TIME LIMIT ASKS A RUN TO HAND OVER; IT DOES NOT STOP IT (owner,
- * ; .
+ * THE TIME LIMIT ASKS A RUN TO HAND OVER; IT DOES NOT STOP IT.
  *
- * Case: team a designer run (a ticket) were each
+ * Case: two long design runs were each
  * stopped at their 25-minute limit — "The model in 'reviewer' was still working
  * and was stopped" — and each retry restarted the step.
  *

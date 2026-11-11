@@ -3,7 +3,12 @@
  * network had a bad second" apart from "the platform this run works through is
  * down for a few minutes".
  *
- * WHY THIS EXISTS and gave up while the platform was still starting. Nothing was
+ * WHY THIS EXISTS.
+ * A run reaches its models and its tools through the host's platform. When that
+ * platform restarted for nine minutes, two developer runs that had finished
+ * 18 minutes of work failed: the model stream broke first, then the step that
+ * hands the result back ran three times in 17 seconds (the network schedule's
+ * 5 s + 12 s) and gave up while the platform was still starting. Nothing was
  * wrong with the work; the run had only to wait.
  *
  * The engine does not know where the platform is; the host does. The host

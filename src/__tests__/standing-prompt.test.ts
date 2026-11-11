@@ -57,7 +57,7 @@ describe('a node\'s standing text', () => {
     expect(r).toEqual({ prompt: 'x', promptParts: [{ key: 'p', text: 'x' }], systemPrompt: '', systemPromptParts: [] });
   });
 
-  // : the rule files are the same on every call, but sat after the
+  // the rule files are the same on every call, but sat after the
   // per-run project folders in the call's text, so a provider could never cache them (~36k characters a chat turn).
   // A/B: before, the rules were in the call's text in both cases — the first case fails there.
   it('the repository\'s rule files join the standing text, after the skill pages; without standing text, the call\'s text as before', async () => {
