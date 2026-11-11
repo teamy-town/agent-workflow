@@ -3,7 +3,7 @@
  * facts derived from it that reach the agent.
  *
  * THE LIMIT DOES NOT STOP THE RUN. Long design runs
- * 9d6b8743 and a run were each stopped at their 25-minute limit
+ * two runs  were each stopped at their 25-minute limit
  * while their reviewer was still working, and each retry restarted the step.
  * Since then a run that reaches its limit is TOLD, through the same in-run door
  * a manager's message takes (the inbox pump), that it is past its time and must
@@ -109,7 +109,7 @@ export const RUN_OVER_LIMIT_NOTICE_OFFSETS_MS: readonly number[] = Object.freeze
  * in-container watchdog, the host's reaper — waits this long past it.
  * 🔗 TWO-PLACES: backend constants/run-time-limit.js and
  * packages/egress-tunnel/init.mjs carry the same number (zero-dependency
- * loaders); the host fails when
+ * loaders); the host's contract test fails when
  * any of the three drifts.
  */
 export const RUN_HARD_STOP_AFTER_DEADLINE_MS = RUN_HANDOVER_WINDOW_MS + RUN_FINALIZE_GRACE_MS + 30_000;

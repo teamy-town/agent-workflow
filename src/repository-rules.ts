@@ -943,7 +943,7 @@ export interface PreparedWorkspace {
   selectable?: boolean;
   /**
    * Where the person's folder is in this run AS IT IS ON DISK NOW, with the
-   * folder's access (`liveDirectory`; selfhosted live-view.js). Absent when the runner gave none.
+   * folder's access (`liveDirectory`). Absent when the runner gave none.
    */
   liveDirectory?: string;
   /** The run's directory IS the person's folder (a folder in no Git repository): no commit. */
@@ -1038,7 +1038,7 @@ export const PREPARED_FOLDERS_HEADING = '## PROJECT FOLDERS AVAILABLE IN THIS RU
  * WHERE THE RUN'S FOLDERS ARE (manifest `attachment`): 'companion' — in the
  * run's folder container, not in this process's filesystem, reached with the
  * run_workspaces server's `run_command` at the same directories (a person's
- * chat turn on a shared worker, selfhosted local-projects/run-companion.js);
+ * chat turn on a shared worker);
  * '' — in this run's own container, as always. PURE.
  */
 export function foldersAttachment(env: Record<string, string | undefined> = process.env): '' | 'companion' {
@@ -1082,8 +1082,7 @@ export function preparedFoldersBlock(env: Record<string, string | undefined> = p
 
 /**
  * WHO ELSE WAS WORKING WHEN THIS RUN STARTED — the runner's start-time copy of
- * the list list_running_agents answers (manifest `teammates`; selfhosted
- * execution-context.js withTeammates): each run's role, ticket, the
+ * the list list_running_agents answers (manifest `teammates`): each run's role, ticket, the
  * repositories it works in, since when. Facts only; [] when the runner gave
  * none or listed nobody.
  */

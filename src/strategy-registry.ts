@@ -648,7 +648,7 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
   // NO INSTRUCTION FILES ARE HANDED OUT: no "# Repository
   // rules" section, in full or by name. A rule file the agent's setting leaves
   // on is in the run's copy of its folder for the agent to find like any file;
-  // one turned off is not there (selfhosted local-projects/rule-file-list.js
+  // one turned off is not there (the host
   // decides both). Only this is still decided here: a node engine that would
   // load a turned-off file by itself (codex: AGENTS.md) loads none of its own
   // (`skipNativeRuleFiles`). Nothing turned off, or an engine that loads none

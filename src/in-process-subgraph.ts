@@ -930,7 +930,7 @@ function dirSizeBytes(dir) {
  * these. The holders are all in THIS process: the cache is this process's own
  * /tmp (a run has a container of its own, or a warm-pool task
  * runs one parent at a time, its children in-process), so this in-process
- * hold is the whole answer — a host platform call per eviction could only
+ * hold is the whole answer — a platform call per eviction could only
  * repeat it, a network round-trip later.
  */
 const runningFrom = new Map(); // cacheDir → child runs using it now
