@@ -39,13 +39,13 @@ describe('a repository the run can still prepare', () => {
 describe('who else was working when the run started', () => {
   const teammates = { readAt: '2026-10-27T01:00:00.000Z', runs: [
     { executionId: '00000000-0000-4000-8000-000000000001', workflowType: 'developer', ticketKey: '100', since: '2026-10-26T23:31:00.000Z', repositories: ['12-selfhosted', '12-backend'] },
-    { executionId: '00000000-0000-4000-8000-000000000002', workflowType: 'team', since: '2026-10-27T00:00:00.000Z' },
+    { executionId: '00000000-0000-4000-8000-000000000002', workflowType: 'member-b', since: '2026-10-27T00:00:00.000Z' },
   ] };
   it('one line per run: role, run, ticket, since, repositories — and where to read it fresh', () => {
     const block = preparedFoldersBlock(ws({ teammates }));
     expect(block).toContain('Other runs of the project that were active when this run started (2026-10-27T01:00:00.000Z; list_running_agents lists them as they are now):');
     expect(block).toContain('- a developer run-0000-4000-8000-000000000001, ticket 100, since 2026-10-26T23:31:00.000Z, working in 12-selfhosted, 12-backend');
-    expect(block).toContain('- team 00000000-0000-4000-8000-000000000002, since 2026-10-27T00:00:00.000Z');
+    expect(block).toContain('- member-b 00000000-0000-4000-8000-000000000002, since 2026-10-27T00:00:00.000Z');
   });
   it('nothing is said when the runner listed nobody or gave no list', () => {
     expect(preparedFoldersBlock(ws({ teammates: { readAt: 'x', runs: [] } }))).not.toContain('Other runs of the project');

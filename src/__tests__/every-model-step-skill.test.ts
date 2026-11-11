@@ -4,7 +4,7 @@
  * A person's line is delivered into whichever step is running and that step is
  * told to answer with the person-answer tool. A step whose node had not
  * declared the tool's skill was told to use a tool it did not have
- * (member a run, ).
+ * (a run, ).
  * A skill that declares `everyModelStep: true` is now handed to every model
  * step — its tools, not its page — unless the node denies its tools.
  *

@@ -95,10 +95,10 @@ See [`examples/`](./examples/) for runnable demos of each pattern.
 
 ## 🚀 Self-hosted Teamy (single VM)
 
-Run the **full Teamy platform** — host platform + agents + marketplace — on your own box:
+Run the **full Teamy platform** — platform + agents + marketplace — on your own box:
 
 ```bash
-curl -fsSL https://dl.zibby.app/the host | bash
+curl -fsSL https://dl.zibby.app/selfhosted/latest/install.sh | bash
 ```
 
 Requirements: Docker + ~8 GB RAM. The installer downloads the release bundle, `docker load`s the images locally (**no registry login needed**), generates secrets, brings the stack up, and prints your dashboard URL + access token. Free tier: up to 10 deployed agents.

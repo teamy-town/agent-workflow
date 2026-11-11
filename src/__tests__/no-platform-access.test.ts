@@ -34,7 +34,8 @@ describe('the engine holds no platform access', () => {
 
   it('no internal project notes in the engine source', () => {
     const files = readdirSync(SRC).filter((f) => /\.(ts|js)$/.test(f));
-    const NOTES = /(internal names)/i;
+    // Written in pieces so this file does not itself spell the names it forbids.
+    const NOTES = new RegExp(['found' + 'er', 'run_' + 'log', 'mag' + 'num', 'board-' + 'runner', 'project man' + 'ager', 'product-' + 'owner', 'self-' + 'host', 'zibby\\.(app|dev)', 'skills-' + 'internal'].join('|'), 'i');
     for (const file of files) {
       const hit = read(file).split('\n').find((line) => NOTES.test(line));
       expect(hit, file).toBeUndefined();
