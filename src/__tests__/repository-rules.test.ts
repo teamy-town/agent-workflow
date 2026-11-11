@@ -572,7 +572,7 @@ describe('the run\'s project folders and their access — a standing fact for ev
       { originalPath: '/Users/example/app/selfhosted', directory: '/workspace/local-project/tree/selfhosted', isPrimary: true, access: 'editable',
         ancestorRuleFiles: ['/Users/example/app/AGENTS.md', '/Users/example/app/ENGINEERING_STANDARDS.md'] },
       { originalPath: '/Users/example/app/backend', directory: '/workspace/local-project/tree/backend', access: 'read-only',
-        ancestorRuleFiles: ['/Users/example/app/AGENTS.md', '/Users/example/app/'] },
+        ancestorRuleFiles: ['/Users/example/app/AGENTS.md', '/Users/example/app/rules/north-star.md'] },
     ]);
     const block = preparedFoldersBlock(withRules);
     expect(block).not.toContain('Paths outside these folders are unavailable here');

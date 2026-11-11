@@ -58,10 +58,10 @@ describe('dispatchSubgraph — the host transport', () => {
   });
 
   it('a host that cannot reach child runs from here says so in its own words, before any request', async () => {
-    registerChildRunTransport({ open() { throw new Error('host: host platform address is not configured'); } } as any);
+    registerChildRunTransport({ open() { throw new Error('host: control plane address is not configured'); } } as any);
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    await expect(dispatchSubgraph('child', { async: true })).rejects.toThrow('host: host platform address is not configured');
+    await expect(dispatchSubgraph('child', { async: true })).rejects.toThrow('host: control plane address is not configured');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 

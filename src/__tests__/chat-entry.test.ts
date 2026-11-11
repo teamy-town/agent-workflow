@@ -71,7 +71,7 @@ describe('serialize() — the chatEntry declaration', () => {
 describe('a chat turn', () => {
   it('carries the person\'s words verbatim into the declared node only, with no schema, and hands the reply over', async () => {
     const calls: any[] = [];
-    const invokeAgent = vi.fn(async (prompt, _ctx, opts) => { calls.push({ prompt, opts }); return 'a ticket is in progress; 14 is waiting for review.'; });
+    const invokeAgent = vi.fn(async (prompt, _ctx, opts) => { calls.push({ prompt, opts }); return 'Ticket 12 is in progress; 14 is waiting for review.'; });
     const onChatReply = vi.fn(async () => {});
     const graph = chatGraph(invokeAgent);
     const res: any = await graph.run({}, {
@@ -95,8 +95,8 @@ describe('a chat turn', () => {
     expect(CHAT_CALL).toBe('chatCall');
     expect(opts[CHAT_CALL]).toBe(true);
 
-    expect(onChatReply).toHaveBeenCalledWith({ node: 'manager', text: 'a ticket is in progress; 14 is waiting for review.' });
-    expect(res.chatReplies).toEqual([{ node: 'manager', text: 'a ticket is in progress; 14 is waiting for review.' }]);
+    expect(onChatReply).toHaveBeenCalledWith({ node: 'manager', text: 'Ticket 12 is in progress; 14 is waiting for review.' });
+    expect(res.chatReplies).toEqual([{ node: 'manager', text: 'Ticket 12 is in progress; 14 is waiting for review.' }]);
     // The rest of the run happened as in any run, and every node could see the chat.
     expect(res.state.settle.output).toEqual({ settled: true });
     expect(res.state.prepare.output.sawChat).toBe(true);
@@ -152,7 +152,7 @@ describe('a chat turn', () => {
 
   it('a reply that cannot be delivered does not fail the run', async () => {
     const invokeAgent = vi.fn(async () => 'ok');
-    const onChatReply = vi.fn(async () => { throw new Error('host platform down'); });
+    const onChatReply = vi.fn(async () => { throw new Error('control plane down'); });
     const res: any = await chatGraph(invokeAgent).run({}, { chat: { message: 'hi' } }, { onChatReply });
     expect(res.success).toBe(true);
     expect(res.chatReplies).toHaveLength(1);

@@ -124,7 +124,7 @@ describe('resolveChildTimeoutMs — the budget maths', () => {
       .toBe(20 * 60_000);
   });
 
-  it, () => {
+  it("clamps a declared budget DOWN to the parent's remaining clock — the smaller wins", () => {
     // A lane asks for 40 min inside a 25-min container
     // that is already 5 min in. It cannot have 40; it has 20.
     const got = resolveChildTimeoutMs(

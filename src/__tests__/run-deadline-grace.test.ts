@@ -223,7 +223,7 @@ describe('graph.run — the run deadline', () => {
     expect(result.state['Developer']).toBeUndefined();
   }, 10_000);
 
-  it, async () => {
+  it("a person's Stop during the grace stops at once — no deadline result, no waiting for the grace", async () => {
     const deadlineAtMs = Date.now() + 1500;
     const ctrl = new AbortController();
     let stepSawStop: boolean | null = null;

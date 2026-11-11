@@ -254,7 +254,7 @@ export function resolveInvocationEffort({ options = {}, envEffort, nodeConfigEff
     return null;
   }
   const ran = clampEffort(pick, ceiling);
-  if (ran !== pick) logger.warn(`[workflow] effort "${pick}${ran}" (the person's setting)`);
+  if (ran !== pick) logger.warn(`[workflow] effort "${pick}" is above this agent's ceiling — running at "${ran}" (the person's setting)`);
   return ran;
 }
 

@@ -44,7 +44,7 @@ describe('who else was working when the run started', () => {
   it('one line per run: role, run, ticket, since, repositories — and where to read it fresh', () => {
     const block = preparedFoldersBlock(ws({ teammates }));
     expect(block).toContain('Other runs of the project that were active when this run started (2026-10-27T01:00:00.000Z; list_running_agents lists them as they are now):');
-    expect(block).toContain('- a developer run-0000-4000-8000-000000000001, ticket 100, since 2026-10-26T23:31:00.000Z, working in 12-selfhosted, 12-backend');
+    expect(block).toContain('- developer 00000000-0000-4000-8000-000000000001, ticket 100, since 2026-10-26T23:31:00.000Z, working in 12-selfhosted, 12-backend');
     expect(block).toContain('- member-b 00000000-0000-4000-8000-000000000002, since 2026-10-27T00:00:00.000Z');
   });
   it('nothing is said when the runner listed nobody or gave no list', () => {
