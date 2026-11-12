@@ -1,5 +1,5 @@
 {
-  "name": "@zibby/agent-workflow",
+  "name": "@teamy/agent-workflow",
   "version": "2.0.29",
   "description": "Graph-based AI agent workflow orchestration. Bring your own agent strategies.",
   "type": "module",
@@ -28,7 +28,7 @@
     "orchestration",
     "langgraph"
   ],
-  "author": "Zibby",
+  "author": "Teamy",
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.6.2",
@@ -56,5 +56,16 @@
     "build:types": "tsc",
     "test": "vitest run --passWithNoTests",
     "prepack": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teamy-town/agent-workflow.git"
+  },
+  "homepage": "https://github.com/teamy-town/agent-workflow#readme",
+  "bugs": {
+    "url": "https://github.com/teamy-town/agent-workflow/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -1,8 +1,8 @@
-# @zibby/agent-workflow — 中文
+# @teamy/agent-workflow — 中文
 
-[![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![npm version](https://img.shields.io/npm/v/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
-[![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![Types](https://img.shields.io/npm/types/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | 中文
@@ -35,75 +35,16 @@ graph
 
 ---
 
-## ⚡ 60 秒上手
-
-一个完整的闭环——生成、本地运行、部署到云、远程触发、查看日志。无需全局安装：
-
-无需设置步骤。第一条命令会为你引导生成 `.zibby/workflows/`。
-
-```bash
-# 1. Generate a workflow — creates .zibby/workflows/my-pipeline/ + graph.mjs
-npx @zibby/cli agent new my-pipeline
-
-# 2. Run it locally — names are folder names, not cloud identifiers
-npx @zibby/cli agent start my-pipeline
-
-# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
-npx @zibby/cli login
-npx @zibby/cli agent deploy my-pipeline
-
-# 4. Trigger a remote run by UUID. Tail the logs Heroku-style.
-npx @zibby/cli agent trigger <uuid>     # uuid printed by `deploy` or `agent list`
-npx @zibby/cli agent logs -t
-
-# 5. Manage the fleet
-npx @zibby/cli agent list               # local + deployed (shows UUIDs)
-npx @zibby/cli agent delete <uuid>      # tear one down
-```
-
-如果你更愿意安装一次，而不是每次都用 `npx`：
-
-```bash
-npm install -g @zibby/cli
-zibby --help
-```
-
----
-
-## CLI：完整的工作流生命周期
-
-为保持一致性，所有工作流操作都归于 `zibby agent <verb>` 之下。顶层的简写形式（`zibby start`、`zibby deploy`、`zibby trigger`、`zibby logs`）作为向后兼容的别名保留。
-
-| 命令 | 作用 |
-|---|---|
-| `zibby agent new <name>` | 在 `.zibby/workflows/<name>/` 下**生成**一个新的自定义工作流。如果 `.zibby/` 不存在则自动创建——无需单独的初始化步骤。 |
-| `zibby agent start <name>` | 以热重载方式**本地**运行工作流（默认端口 3848）。名称 = `.zibby/workflows/` 下的文件夹。 |
-| `zibby login` / `logout` / `status` | 云端认证。 |
-| `zibby agent deploy [name]` | 将工作流**部署**到 Teamy Cloud（省略名称时进入交互式选择器）。 |
-| `zibby agent trigger <uuid>` | 在云端**运行**已部署的工作流。UUID 是规范标识（名称仅限本地）。可从 `agent list` 或 `deploy` 的输出中获取 UUID。 |
-| `zibby agent logs [jobId] -t` | 以 Heroku 风格输出某次运行的**日志**。`-t` 表示实时跟随。 |
-| `zibby agent list` | **列出**本地 + 已部署的工作流。 |
-| `zibby agent download <uuid>` | 将已部署的工作流**拉回**本地——编辑并重新部署。 |
-| `zibby agent delete <uuid>` | **删除**已部署的工作流。 |
-
-**本地**运行会落到 `.zibby/output/sessions/<id>/`，包含原始输出、解析后的 JSON 和一份 JSONL 执行日志——便于回放。**云端**运行使用相同的磁盘格式，通过 trigger/logs 命令对外提供。
-
-**本地与云端标识**：工作流文件夹名称（`my-pipeline`）是*本地的*——由 `agent new`、`agent start`、`agent deploy` 使用。云端工作流通过 **UUID** 标识——由 `agent trigger`、`agent logs`、`agent download`、`agent delete` 使用。首次 `deploy` 后，UUID 会缓存到 `.zibby/workflows/<name>/.zibby-deploy.json`（请将其提交到 git，以便协作者共享同一个规范引用）。
-
-> 📋 **完整的 CLI 速查表**，包括 `zibby init`、`zibby template list/add`、`zibby memory remote/cost/pull/push`（UI 代理记忆 + 团队同步）以及 `zibby test`，参见 [`@zibby/cli` 的 README](https://www.npmjs.com/package/@zibby/cli)。上面的 workflow 命令是与引擎相关的子集。
-
----
-
 ## 作为库使用
 
 如果你不想用 CLI，可以直接进入 JavaScript：
 
 ```bash
-npm install @zibby/agent-workflow
+npm install @teamy/agent-workflow
 ```
 
 ```js
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 class MyAgent extends AgentStrategy {
@@ -250,18 +191,6 @@ node index.js
 - **Studio 集成**——固定一个会话、实时观察状态、从 UI 停止一次运行。
 
 你不是在替换代理。你是在给它一份职位说明、一份契约，以及在流水线中的一个位置。
-
----
-
-## 配套包
-
-| 包 | 它增加了什么 |
-|---|---|
-| [`@zibby/cli`](https://www.npmjs.com/package/@zibby/cli) | `zibby` 命令——脚手架、开发服务器、部署、触发、日志。 |
-| [`@zibby/core`](https://www.npmjs.com/package/@zibby/core) | 内置代理策略（Claude / Codex / Gemini / OpenAI Assistant）、MCP 客户端、运行时。 |
-| [`@zibby/skills`](https://www.npmjs.com/package/@zibby/skills) | 预构建技能（通过 Playwright MCP 的浏览器、GitHub、Jira、Slack、记忆）。 |
-
-workflow 本身**不附带任何代理策略，也不附带任何技能**——自带你自己的，或者 `npm install @zibby/core @zibby/skills` 以获得开箱即用的体验。
 
 ---
 

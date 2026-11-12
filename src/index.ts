@@ -1,9 +1,9 @@
 /**
- * @zibby/agent-workflow — graph-based AI agent workflow orchestration.
+ * @teamy/agent-workflow — graph-based AI agent workflow orchestration.
  *
  * Quick start:
  *
- *   import { WorkflowGraph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+ *   import { WorkflowGraph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
  *
  *   // 1. Implement your agent
  *   class MyAgent extends AgentStrategy {

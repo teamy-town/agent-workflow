@@ -53,7 +53,7 @@ Options: \`workflow\` (required), \`input\` (object or \`(state) => object\`),
 \`output\` (dot-path or \`(finalState) => any\` to extract just what's needed),
 \`async: true\` (fire-and-forget → \`{ jobId }\`), \`timeoutMs\`, \`retries\`.
 For PARALLEL fan-out call \`dispatchSubgraph(slug, { input })\` (exported by
-@zibby/agent-workflow) inside one custom execute node with
+@teamy/agent-workflow) inside one custom execute node with
 \`Promise.allSettled\` — one brick failing must not kill its siblings.
 
 **Chain conditions are EXPLICIT decision nodes.** Bricks are full multi-exit

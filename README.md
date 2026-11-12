@@ -1,8 +1,8 @@
-# @zibby/agent-workflow
+# @teamy/agent-workflow
 
-[![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![npm version](https://img.shields.io/npm/v/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
-[![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![Types](https://img.shields.io/npm/types/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
 [Deutsch](./i18n/README.de.md) | [Español](./i18n/README.es.md) | [français](./i18n/README.fr.md) | [日本語](./i18n/README.ja.md) | [한국어](./i18n/README.ko.md) | [Português](./i18n/README.pt.md) | [Русский](./i18n/README.ru.md) | [中文](./i18n/README.zh.md)
@@ -38,13 +38,13 @@ Each agent reads its own credential env var (`ANTHROPIC_API_KEY`, `OPENAI_API_KE
 ## ⚡ Try it in 60 seconds
 
 ```bash
-npm install @zibby/agent-workflow zod
+npm install @teamy/agent-workflow zod
 ```
 
 Save this as `index.mjs` and run `node index.mjs`. It uses a stand-in agent with canned answers, so it runs offline with no API key:
 
 ```js
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 // 1. Bring your own agent. A real one calls Claude Code, Codex, an API…

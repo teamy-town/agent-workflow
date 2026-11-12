@@ -10,7 +10,7 @@
  * Run: `OPENAI_API_KEY=... node index.js`
  */
 
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 class OpenAIChatStrategy extends AgentStrategy {

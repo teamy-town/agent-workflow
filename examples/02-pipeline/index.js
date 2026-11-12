@@ -8,7 +8,7 @@
  * Run: `node index.js`
  */
 
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 // A scripted agent: returns canned structured output per node, so we can

@@ -1,8 +1,8 @@
-# @zibby/agent-workflow — Русский
+# @teamy/agent-workflow — Русский
 
-[![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![npm version](https://img.shields.io/npm/v/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
-[![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![Types](https://img.shields.io/npm/types/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | Русский | [中文](./README.zh.md)
@@ -35,75 +35,16 @@ graph
 
 ---
 
-## ⚡ Попробуйте за 60 секунд
-
-Полный цикл — сгенерировать, запустить локально, развернуть в облаке, запустить удалённо, смотреть логи. Глобальная установка не нужна:
-
-Шаг настройки отсутствует. Первая команда сама инициализирует для вас `.zibby/workflows/`.
-
-```bash
-# 1. Generate a workflow — creates .zibby/workflows/my-pipeline/ + graph.mjs
-npx @zibby/cli agent new my-pipeline
-
-# 2. Run it locally — names are folder names, not cloud identifiers
-npx @zibby/cli agent start my-pipeline
-
-# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
-npx @zibby/cli login
-npx @zibby/cli agent deploy my-pipeline
-
-# 4. Trigger a remote run by UUID. Tail the logs Heroku-style.
-npx @zibby/cli agent trigger <uuid>     # uuid printed by `deploy` or `agent list`
-npx @zibby/cli agent logs -t
-
-# 5. Manage the fleet
-npx @zibby/cli agent list               # local + deployed (shows UUIDs)
-npx @zibby/cli agent delete <uuid>      # tear one down
-```
-
-Предпочитаете установить один раз вместо постоянного `npx`:
-
-```bash
-npm install -g @zibby/cli
-zibby --help
-```
-
----
-
-## CLI: полный жизненный цикл рабочего процесса
-
-Все операции с рабочими процессами для единообразия располагаются под `zibby agent <verb>`. Краткие формы верхнего уровня (`zibby start`, `zibby deploy`, `zibby trigger`, `zibby logs`) сохранены как псевдонимы для обратной совместимости.
-
-| Команда | Что делает |
-|---|---|
-| `zibby agent new <name>` | **Генерирует** новый пользовательский рабочий процесс в `.zibby/workflows/<name>/`. Автоматически создаёт `.zibby/`, если он отсутствует, — отдельный шаг инициализации не требуется. |
-| `zibby agent start <name>` | Запускает рабочий процесс **локально** с горячей перезагрузкой (по умолчанию порт 3848). Имя = папка внутри `.zibby/workflows/`. |
-| `zibby login` / `logout` / `status` | Облачная аутентификация. |
-| `zibby agent deploy [name]` | **Развёртывает** рабочий процесс в Teamy Cloud (интерактивный выбор, если имя опущено). |
-| `zibby agent trigger <uuid>` | **Запускает** развёрнутый рабочий процесс в облаке. UUID каноничен (имена существуют только локально). Получайте UUID из `agent list` или из вывода `deploy`. |
-| `zibby agent logs [jobId] -t` | Выводит **логи** запуска в стиле Heroku. `-t` — следить в реальном времени. |
-| `zibby agent list` | **Список** локальных и развёрнутых рабочих процессов. |
-| `zibby agent download <uuid>` | **Загружает** развёрнутый рабочий процесс обратно локально — правьте и развёртывайте снова. |
-| `zibby agent delete <uuid>` | **Удаляет** развёрнутый рабочий процесс. |
-
-**Локальные** запуски попадают в `.zibby/output/sessions/<id>/` с исходными выводами, разобранным JSON и журналом выполнения в формате JSONL — удобно для воспроизведения. **Облачные** запуски используют тот же формат на диске, доступный через команды trigger/logs.
-
-**Локальная и облачная идентичность**: имена папок рабочих процессов (`my-pipeline`) — *локальные*, используются командами `agent new`, `agent start`, `agent deploy`. Облачные рабочие процессы идентифицируются по **UUID** — используются командами `agent trigger`, `agent logs`, `agent download`, `agent delete`. После первого `deploy` UUID кэшируется в `.zibby/workflows/<name>/.zibby-deploy.json` (закоммитьте его в git, чтобы коллеги использовали один и тот же канонический идентификатор).
-
-> 📋 **Полная шпаргалка по CLI**, включая `zibby init`, `zibby template list/add`, `zibby memory remote/cost/pull/push` (память агента UI + командная синхронизация) и `zibby test`, находится в [README пакета `@zibby/cli`](https://www.npmjs.com/package/@zibby/cli). Команды workflow выше — это подмножество, относящееся к движку.
-
----
-
 ## Использование как библиотеки
 
 Если вам не нужен CLI, переходите прямо в JavaScript:
 
 ```bash
-npm install @zibby/agent-workflow
+npm install @teamy/agent-workflow
 ```
 
 ```js
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 class MyAgent extends AgentStrategy {
@@ -250,18 +191,6 @@ node index.js
 - **Интеграцию со Studio** — закрепите сессию, наблюдайте за состоянием в реальном времени, остановите запуск из UI.
 
 Вы не заменяете агента. Вы даёте ему должностную инструкцию, контракт и место в конвейере.
-
----
-
-## Сопутствующие пакеты
-
-| Пакет | Что добавляет |
-|---|---|
-| [`@zibby/cli`](https://www.npmjs.com/package/@zibby/cli) | Команда `zibby` — генерация шаблонов, dev-сервер, развёртывание, запуск, логи. |
-| [`@zibby/core`](https://www.npmjs.com/package/@zibby/core) | Встроенные стратегии агентов (Claude / Codex / Gemini / OpenAI Assistant), клиент MCP, среда выполнения. |
-| [`@zibby/skills`](https://www.npmjs.com/package/@zibby/skills) | Готовые навыки (браузер через Playwright MCP, GitHub, Jira, Slack, память). |
-
-Сам workflow поставляется с **нулём стратегий агентов и нулём навыков** — приносите свои или выполните `npm install @zibby/core @zibby/skills` для опыта «всё включено».
 
 ---
 

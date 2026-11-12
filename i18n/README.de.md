@@ -1,8 +1,8 @@
-# @zibby/agent-workflow — Deutsch
+# @teamy/agent-workflow — Deutsch
 
-[![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![npm version](https://img.shields.io/npm/v/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
-[![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![Types](https://img.shields.io/npm/types/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
 [English](../README.md) | Deutsch | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [中文](./README.zh.md)
@@ -35,75 +35,16 @@ Jeder Agent liest seine eigene Credential-Umgebungsvariable (`ANTHROPIC_API_KEY`
 
 ---
 
-## ⚡ Probier es in 60 Sekunden
-
-Ein kompletter Kreislauf — generieren, lokal ausführen, in die Cloud deployen, remote auslösen, Logs verfolgen. Keine globale Installation nötig:
-
-Kein Setup-Schritt. Der erste Befehl bootstrappt `.zibby/workflows/` für dich.
-
-```bash
-# 1. Generate a workflow — creates .zibby/workflows/my-pipeline/ + graph.mjs
-npx @zibby/cli agent new my-pipeline
-
-# 2. Run it locally — names are folder names, not cloud identifiers
-npx @zibby/cli agent start my-pipeline
-
-# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
-npx @zibby/cli login
-npx @zibby/cli agent deploy my-pipeline
-
-# 4. Trigger a remote run by UUID. Tail the logs Heroku-style.
-npx @zibby/cli agent trigger <uuid>     # uuid printed by `deploy` or `agent list`
-npx @zibby/cli agent logs -t
-
-# 5. Manage the fleet
-npx @zibby/cli agent list               # local + deployed (shows UUIDs)
-npx @zibby/cli agent delete <uuid>      # tear one down
-```
-
-Lieber einmal installieren, statt jedes Mal `npx` zu nutzen:
-
-```bash
-npm install -g @zibby/cli
-zibby --help
-```
-
----
-
-## Die CLI: der vollständige Workflow-Lebenszyklus
-
-Alle Workflow-Operationen liegen aus Konsistenzgründen unter `zibby agent <verb>`. Die nackten Top-Level-Formen (`zibby start`, `zibby deploy`, `zibby trigger`, `zibby logs`) bleiben als abwärtskompatible Aliase erhalten.
-
-| Befehl | Was er tut |
-|---|---|
-| `zibby agent new <name>` | **Generiert** einen neuen benutzerdefinierten Workflow unter `.zibby/workflows/<name>/`. Legt `.zibby/` automatisch an, falls es fehlt — kein separater Init-Schritt erforderlich. |
-| `zibby agent start <name>` | Führt einen Workflow **lokal** mit Hot-Reload aus (Standard-Port 3848). Name = Ordner unter `.zibby/workflows/`. |
-| `zibby login` / `logout` / `status` | Cloud-Authentifizierung. |
-| `zibby agent deploy [name]` | **Deployt** einen Workflow in die Teamy Cloud (interaktive Auswahl, wenn der Name weggelassen wird). |
-| `zibby agent trigger <uuid>` | **Führt** einen deployten Workflow in der Cloud aus. Die UUID ist kanonisch (Namen sind nur lokal). UUIDs bekommst du über `agent list` oder die Ausgabe von `deploy`. |
-| `zibby agent logs [jobId] -t` | Verfolgt **Logs** eines Laufs, Heroku-Stil. `-t`, um live zu folgen. |
-| `zibby agent list` | **Listet** lokale + deployte Workflows. |
-| `zibby agent download <uuid>` | **Holt** einen deployten Workflow zurück nach lokal — bearbeiten + erneut deployen. |
-| `zibby agent delete <uuid>` | **Löscht** einen deployten Workflow. |
-
-**Lokale** Läufe landen in `.zibby/output/sessions/<id>/` mit Roh-Ausgaben, geparstem JSON und einem JSONL-Ausführungsprotokoll — replay-freundlich. **Cloud**-Läufe verwenden dasselbe On-Disk-Format, vorgelagert durch die Befehle trigger/logs.
-
-**Lokale vs. Cloud-Identität**: Workflow-Ordnernamen (`my-pipeline`) sind *lokal* — verwendet von `agent new`, `agent start`, `agent deploy`. Cloud-Workflows werden über die **UUID** identifiziert — verwendet von `agent trigger`, `agent logs`, `agent download`, `agent delete`. Nach deinem ersten `deploy` wird die UUID in `.zibby/workflows/<name>/.zibby-deploy.json` zwischengespeichert (committe sie ins Git, damit Mitarbeitende dieselbe kanonische Referenz teilen).
-
-> 📋 **Vollständiger CLI-Spickzettel** inklusive `zibby init`, `zibby template list/add`, `zibby memory remote/cost/pull/push` (UI-Agent-Speicher + Team-Sync) und `zibby test` steht im [README von `@zibby/cli`](https://www.npmjs.com/package/@zibby/cli). Die obigen Workflow-Befehle sind die für die Engine relevante Teilmenge.
-
----
-
 ## Als Bibliothek verwenden
 
 Wenn du die CLI nicht willst, steig direkt in JavaScript ein:
 
 ```bash
-npm install @zibby/agent-workflow
+npm install @teamy/agent-workflow
 ```
 
 ```js
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 class MyAgent extends AgentStrategy {
@@ -250,18 +191,6 @@ Ein Graph gibt dir:
 - **Studio-Integration** — pinne eine Session, beobachte den Live-State, stoppe einen Lauf aus der UI.
 
 Du ersetzt den Agenten nicht. Du gibst ihm eine Stellenbeschreibung, einen Vertrag und einen Platz in einer Pipeline.
-
----
-
-## Begleitende Pakete
-
-| Paket | Was es hinzufügt |
-|---|---|
-| [`@zibby/cli`](https://www.npmjs.com/package/@zibby/cli) | `zibby`-Befehl — Scaffolding, Dev-Server, Deploy, Trigger, Logs. |
-| [`@zibby/core`](https://www.npmjs.com/package/@zibby/core) | Eingebaute Agenten-Strategien (Claude / Codex / Gemini / OpenAI Assistant), MCP-Client, Runtime. |
-| [`@zibby/skills`](https://www.npmjs.com/package/@zibby/skills) | Vorgefertigte Skills (Browser via Playwright MCP, GitHub, Jira, Slack, Memory). |
-
-Workflow selbst liefert **null Agenten-Strategien und null Skills** — bring deine eigenen mit, oder `npm install @zibby/core @zibby/skills` für das Batteries-included-Erlebnis.
 
 ---
 

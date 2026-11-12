@@ -1,8 +1,8 @@
-# @zibby/agent-workflow — 한국어
+# @teamy/agent-workflow — 한국어
 
-[![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![npm version](https://img.shields.io/npm/v/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
-[![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![Types](https://img.shields.io/npm/types/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | 한국어 | [Português](./README.pt.md) | [Русский](./README.ru.md) | [中文](./README.zh.md)
@@ -35,75 +35,16 @@ graph
 
 ---
 
-## ⚡ 60초 만에 시도하기
-
-완전한 루프 — 생성하고, 로컬에서 실행하고, 클라우드에 배포하고, 원격으로 트리거하고, 로그를 봅니다. 전역 설치는 필요 없습니다:
-
-설정 단계가 없습니다. 첫 번째 명령이 `.zibby/workflows/`를 당신을 위해 부트스트랩합니다.
-
-```bash
-# 1. Generate a workflow — creates .zibby/workflows/my-pipeline/ + graph.mjs
-npx @zibby/cli agent new my-pipeline
-
-# 2. Run it locally — names are folder names, not cloud identifiers
-npx @zibby/cli agent start my-pipeline
-
-# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
-npx @zibby/cli login
-npx @zibby/cli agent deploy my-pipeline
-
-# 4. Trigger a remote run by UUID. Tail the logs Heroku-style.
-npx @zibby/cli agent trigger <uuid>     # uuid printed by `deploy` or `agent list`
-npx @zibby/cli agent logs -t
-
-# 5. Manage the fleet
-npx @zibby/cli agent list               # local + deployed (shows UUIDs)
-npx @zibby/cli agent delete <uuid>      # tear one down
-```
-
-매번 `npx`하는 대신 한 번만 설치하고 싶다면:
-
-```bash
-npm install -g @zibby/cli
-zibby --help
-```
-
----
-
-## CLI: 워크플로의 전체 라이프사이클
-
-모든 워크플로 작업은 일관성을 위해 `zibby agent <verb>` 아래에 있습니다. 최상위 단순 형식(`zibby start`, `zibby deploy`, `zibby trigger`, `zibby logs`)은 하위 호환 별칭으로 유지됩니다.
-
-| 명령 | 하는 일 |
-|---|---|
-| `zibby agent new <name>` | `.zibby/workflows/<name>/` 아래에 새 커스텀 워크플로를 **생성**합니다. `.zibby/`가 없으면 자동 생성합니다 — 별도의 init 단계가 필요 없습니다. |
-| `zibby agent start <name>` | 워크플로를 핫 리로드와 함께 **로컬**로 실행합니다(기본 포트 3848). Name = `.zibby/workflows/` 아래의 폴더. |
-| `zibby login` / `logout` / `status` | 클라우드 인증. |
-| `zibby agent deploy [name]` | 워크플로를 Teamy Cloud에 **배포**합니다(name을 생략하면 대화형 선택기). |
-| `zibby agent trigger <uuid>` | 배포된 워크플로를 클라우드에서 **실행**합니다. UUID가 표준입니다(이름은 로컬 전용). UUID는 `agent list` 또는 `deploy` 출력에서 얻습니다. |
-| `zibby agent logs [jobId] -t` | 실행의 **로그**를 Heroku 방식으로 tail합니다. `-t`로 라이브 추적합니다. |
-| `zibby agent list` | 로컬 + 배포된 워크플로를 **나열**합니다. |
-| `zibby agent download <uuid>` | 배포된 워크플로를 로컬로 다시 **가져옵니다** — 편집 후 재배포. |
-| `zibby agent delete <uuid>` | 배포된 워크플로를 **삭제**합니다. |
-
-**로컬** 실행은 원시 출력, 파싱된 JSON, 그리고 JSONL 실행 로그와 함께 `.zibby/output/sessions/<id>/`에 안착합니다 — 재생에 적합합니다. **클라우드** 실행은 동일한 온디스크 형식을 사용하며, trigger/logs 명령으로 전면화됩니다.
-
-**로컬 vs 클라우드 식별**: 워크플로 폴더 이름(`my-pipeline`)은 *로컬*입니다 — `agent new`, `agent start`, `agent deploy`에서 사용됩니다. 클라우드 워크플로는 **UUID**로 식별됩니다 — `agent trigger`, `agent logs`, `agent download`, `agent delete`에서 사용됩니다. 첫 `deploy` 이후, UUID는 `.zibby/workflows/<name>/.zibby-deploy.json`에 캐시됩니다(협업자가 동일한 표준 참조를 공유하도록 git에 커밋하세요).
-
-> 📋 **전체 CLI 치트시트**에는 `zibby init`, `zibby template list/add`, `zibby memory remote/cost/pull/push`(UI 에이전트 메모리 + 팀 동기화), 그리고 `zibby test`가 포함되며 [`@zibby/cli`의 README](https://www.npmjs.com/package/@zibby/cli)에 있습니다. 위의 워크플로 명령은 엔진 관련 하위 집합입니다.
-
----
-
 ## 라이브러리로 사용하기
 
 CLI를 원하지 않는다면, JavaScript로 직접 들어가세요:
 
 ```bash
-npm install @zibby/agent-workflow
+npm install @teamy/agent-workflow
 ```
 
 ```js
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 class MyAgent extends AgentStrategy {
@@ -250,18 +191,6 @@ node index.js
 - **Studio 통합** — 세션을 고정하고, 라이브 state를 보고, UI에서 실행을 중지합니다.
 
 당신은 에이전트를 대체하는 것이 아닙니다. 에이전트에게 직무 기술서, 계약, 그리고 파이프라인 안의 자리를 주는 것입니다.
-
----
-
-## 동반 패키지
-
-| 패키지 | 추가하는 것 |
-|---|---|
-| [`@zibby/cli`](https://www.npmjs.com/package/@zibby/cli) | `zibby` 명령 — 스캐폴딩, 개발 서버, deploy, trigger, logs. |
-| [`@zibby/core`](https://www.npmjs.com/package/@zibby/core) | 내장 에이전트 스트래티지(Claude / Codex / Gemini / OpenAI Assistant), MCP 클라이언트, 런타임. |
-| [`@zibby/skills`](https://www.npmjs.com/package/@zibby/skills) | 사전 구축된 스킬(Playwright MCP를 통한 브라우저, GitHub, Jira, Slack, 메모리). |
-
-Workflow 자체는 **제로 에이전트 스트래티지와 제로 스킬**을 제공합니다 — 직접 가져오거나, 배터리 포함 경험을 위해 `npm install @zibby/core @zibby/skills`를 실행하세요.
 
 ---
 

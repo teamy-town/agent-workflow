@@ -61,7 +61,7 @@ function generateHeader(meta) {
 
 function generateImports(workflowType, { usesRegisteredNodes = true }: any = {}) {
   const lines = [
-    `import { WorkflowGraph, invokeAgent, getResolvedToolDefinitions } from '@zibby/agent-workflow';`,
+    `import { WorkflowGraph, invokeAgent, getResolvedToolDefinitions } from '@teamy/agent-workflow';`,
   ];
   if (usesRegisteredNodes) {
     lines.push(`// import './register-nodes.js'; // register custom node types here`);

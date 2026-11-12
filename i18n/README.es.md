@@ -1,8 +1,8 @@
-# @zibby/agent-workflow — Español
+# @teamy/agent-workflow — Español
 
-[![npm version](https://img.shields.io/npm/v/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![npm version](https://img.shields.io/npm/v/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
-[![Types](https://img.shields.io/npm/types/@zibby/agent-workflow.svg)](https://www.npmjs.com/package/@zibby/agent-workflow)
+[![Types](https://img.shields.io/npm/types/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
 [English](../README.md) | [Deutsch](./README.de.md) | Español | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [中文](./README.zh.md)
@@ -35,75 +35,16 @@ Cada agente lee su propia variable de entorno de credenciales (`ANTHROPIC_API_KE
 
 ---
 
-## ⚡ Pruébalo en 60 segundos
-
-Un ciclo completo — generar, ejecutar localmente, desplegar en la nube, disparar de forma remota, ver los registros. No hace falta instalación global:
-
-Sin paso de configuración. El primer comando inicializa `.zibby/workflows/` por ti.
-
-```bash
-# 1. Generate a workflow — creates .zibby/workflows/my-pipeline/ + graph.mjs
-npx @zibby/cli agent new my-pipeline
-
-# 2. Run it locally — names are folder names, not cloud identifiers
-npx @zibby/cli agent start my-pipeline
-
-# 3. Ship it to Teamy Cloud (returns a UUID + caches it in .zibby-deploy.json)
-npx @zibby/cli login
-npx @zibby/cli agent deploy my-pipeline
-
-# 4. Trigger a remote run by UUID. Tail the logs Heroku-style.
-npx @zibby/cli agent trigger <uuid>     # uuid printed by `deploy` or `agent list`
-npx @zibby/cli agent logs -t
-
-# 5. Manage the fleet
-npx @zibby/cli agent list               # local + deployed (shows UUIDs)
-npx @zibby/cli agent delete <uuid>      # tear one down
-```
-
-¿Prefieres instalar una sola vez en lugar de usar `npx` cada vez?
-
-```bash
-npm install -g @zibby/cli
-zibby --help
-```
-
----
-
-## La CLI: ciclo de vida completo del flujo de trabajo
-
-Todas las operaciones de flujo de trabajo viven bajo `zibby agent <verb>` por consistencia. Las formas escuetas de nivel superior (`zibby start`, `zibby deploy`, `zibby trigger`, `zibby logs`) se mantienen como alias de compatibilidad hacia atrás.
-
-| Comando | Qué hace |
-|---|---|
-| `zibby agent new <name>` | **Genera** un nuevo flujo de trabajo personalizado bajo `.zibby/workflows/<name>/`. Crea automáticamente `.zibby/` si no existe — no se requiere un paso de inicialización aparte. |
-| `zibby agent start <name>` | Ejecuta un flujo de trabajo **localmente** con recarga en caliente (por defecto en el puerto 3848). El nombre = carpeta bajo `.zibby/workflows/`. |
-| `zibby login` / `logout` / `status` | Autenticación en la nube. |
-| `zibby agent deploy [name]` | **Despliega** un flujo de trabajo en Teamy Cloud (selector interactivo si se omite el nombre). |
-| `zibby agent trigger <uuid>` | **Ejecuta** un flujo de trabajo desplegado en la nube. El UUID es canónico (los nombres son solo locales). Obtén los UUID de `agent list` o de la salida de `deploy`. |
-| `zibby agent logs [jobId] -t` | Sigue los **registros** de una ejecución, al estilo Heroku. `-t` para seguirlos en vivo. |
-| `zibby agent list` | **Lista** los flujos de trabajo locales + desplegados. |
-| `zibby agent download <uuid>` | **Recupera** un flujo de trabajo desplegado al local — edita + vuelve a desplegar. |
-| `zibby agent delete <uuid>` | **Elimina** un flujo de trabajo desplegado. |
-
-Las ejecuciones **locales** aterrizan en `.zibby/output/sessions/<id>/` con salidas en bruto, JSON parseado y un registro de ejecución JSONL — aptas para reproducción. Las ejecuciones en la **nube** usan el mismo formato en disco, con los comandos trigger/logs por delante.
-
-**Identidad local vs nube**: los nombres de carpeta de los flujos de trabajo (`my-pipeline`) son *locales* — los usan `agent new`, `agent start`, `agent deploy`. Los flujos de trabajo en la nube se identifican por **UUID** — usado por `agent trigger`, `agent logs`, `agent download`, `agent delete`. Tras tu primer `deploy`, el UUID se cachea en `.zibby/workflows/<name>/.zibby-deploy.json` (haz commit en git para que los colaboradores compartan la misma referencia canónica).
-
-> 📋 **Hoja de referencia completa de la CLI** incluyendo `zibby init`, `zibby template list/add`, `zibby memory remote/cost/pull/push` (memoria de agente de UI + sincronización de equipo) y `zibby test` está en el [README de `@zibby/cli`](https://www.npmjs.com/package/@zibby/cli). Los comandos de flujo de trabajo anteriores son el subconjunto relevante para el motor.
-
----
-
 ## Uso como biblioteca
 
 Si no quieres la CLI, sumérgete directamente en JavaScript:
 
 ```bash
-npm install @zibby/agent-workflow
+npm install @teamy/agent-workflow
 ```
 
 ```js
-import { Graph, AgentStrategy, registerStrategy } from '@zibby/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
 import { z } from 'zod';
 
 class MyAgent extends AgentStrategy {
@@ -250,18 +191,6 @@ Un grafo te da:
 - **Integración con Studio** — fija una sesión, observa el estado en vivo, detén una ejecución desde la UI.
 
 No estás reemplazando al agente. Le estás dando una descripción de trabajo, un contrato y un lugar en un pipeline.
-
----
-
-## Paquetes complementarios
-
-| Paquete | Qué añade |
-|---|---|
-| [`@zibby/cli`](https://www.npmjs.com/package/@zibby/cli) | El comando `zibby` — andamiaje, servidor de desarrollo, deploy, trigger, logs. |
-| [`@zibby/core`](https://www.npmjs.com/package/@zibby/core) | Estrategias de agente integradas (Claude / Codex / Gemini / OpenAI Assistant), cliente MCP, runtime. |
-| [`@zibby/skills`](https://www.npmjs.com/package/@zibby/skills) | Skills preconstruidas (navegador vía Playwright MCP, GitHub, Jira, Slack, memoria). |
-
-Workflow en sí mismo incluye **cero estrategias de agente y cero skills** — trae las tuyas, o haz `npm install @zibby/core @zibby/skills` para la experiencia con baterías incluidas.
 
 ---
 
