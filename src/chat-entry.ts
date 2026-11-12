@@ -117,6 +117,20 @@ export const CHAT_REPLY_TASTE =
   'This is a chat, so reply the way a sharp coworker would: straight to the point, a few short sentences in plain words, the answer first — not a report with headings and sections. Use a list only when what you are saying really is a list of steps or options.';
 
 /**
+ * What the conversation in a chat turn is: its LATEST lines — a host bounds what
+ * it sends, and so does normalizeChatTurn — while the run history every model
+ * step has reads what was said before them (each earlier chat turn, with the
+ * person's words and the conversation that turn carried). Said right after the
+ * lines, only when there are lines. Measured on a chat card (a person asking
+ * "as I said before?" about words outside the lines): without it the agent
+ * asked them to repeat themselves with the history tool in front of it; with
+ * it, it looked and answered; with the words in view it read nothing extra.
+ * Exported so an eval can A/B exactly this text.
+ */
+export const CHAT_EARLIER_LINES =
+  'These are only the latest lines. When their message refers to something you cannot see here, look it up before you answer or ask them: your earlier chat turns, with what the person said in each, are in your run history.';
+
+/**
  * The block appended to the declared node's prompt on a chat turn. The node's
  * own prompt (its role, rules, tools and memory) stays exactly as written; this
  * only says that a person is talking, what was said before, and what they just
@@ -137,6 +151,7 @@ export function renderChatTurn(chat: ChatTurn): string {
     '',
     'The conversation so far (oldest first):',
     history,
+    ...(chat.conversation.length ? [CHAT_EARLIER_LINES] : []),
     '',
     'Their new message, in their own words:',
     '<<<',

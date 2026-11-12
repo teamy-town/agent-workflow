@@ -13,7 +13,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
 import { WorkflowGraph } from '../graph.js';
-import { normalizeChatTurn, renderChatTurn, CHAT_CONVERSATION_MAX_CHARS, CHAT_REPLY_TASTE, CHAT_CALL } from '../chat-entry.js';
+import { normalizeChatTurn, renderChatTurn, CHAT_CONVERSATION_MAX_CHARS, CHAT_REPLY_TASTE, CHAT_CALL, CHAT_EARLIER_LINES } from '../chat-entry.js';
 
 function chatGraph(invokeAgent, { declare = true } = {}) {
   const graph = new WorkflowGraph({ invokeAgent });
@@ -228,6 +228,17 @@ describe('normalizeChatTurn / renderChatTurn', () => {
 
   it('says so when it is the first message', () => {
     expect(renderChatTurn({ message: 'hello', conversation: [] })).toContain('first message of the conversation');
+  });
+
+  // The lines a chat turn carries are only the latest ones; what came before them is in the run history every model
+  // step has. Said right after the lines (replacing nothing), only when there are lines.
+  it('says the conversation is its latest lines and that earlier words are in the run history', () => {
+    const block = renderChatTurn({ message: 'as I said before?', conversation: [{ role: 'person', text: 'hi' }, { role: 'agent', text: 'hello' }] });
+    expect(block).toContain(`The conversation so far (oldest first):\n[the person] hi\n[you] hello\n${CHAT_EARLIER_LINES}\n`);
+    expect(CHAT_EARLIER_LINES).toMatch(/only the latest lines/);
+    expect(CHAT_EARLIER_LINES).toMatch(/look it up before you answer or ask/);
+    expect(CHAT_EARLIER_LINES).toMatch(/run history/);
+    expect(renderChatTurn({ message: 'hello', conversation: [] })).not.toContain(CHAT_EARLIER_LINES);
   });
 
   it('tells every chatted agent a chat reply reads like a coworker, not a report', () => {
