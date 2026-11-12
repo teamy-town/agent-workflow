@@ -71,7 +71,11 @@ These are stable contracts consumed by external tooling — change only with a m
 - `stoppedByStudio: true` return key
 - Marker payload `{ phase: 'node_begin' | 'node_end', node: string }`
 
-Consumers: [Teamy Studio](https://github.com/ZibbyDev/studio), `@zibby/skills`'s test-runner.
+The npm package is now `@teamy.town/agent-workflow`. Existing `.zibby` paths,
+`ZIBBY_*` environment variables, and `Symbol.for('@zibby/agent-workflow.…')`
+registry keys remain stable for compatibility with existing integrations.
+
+Consumers: Teamy Studio, `@zibby/skills`'s test-runner.
 
 ## Known limitations
 

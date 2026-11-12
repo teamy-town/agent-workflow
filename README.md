@@ -7,7 +7,7 @@
 
 [Deutsch](./i18n/README.de.md) | [Español](./i18n/README.es.md) | [français](./i18n/README.fr.md) | [日本語](./i18n/README.ja.md) | [한국어](./i18n/README.ko.md) | [Português](./i18n/README.pt.md) | [Русский](./i18n/README.ru.md) | [中文](./i18n/README.zh.md)
 
-📖 **Full docs:** [docs.zibby.app](https://docs.zibby.app) · [Get Started](https://docs.zibby.app/get-started/install) · [Concepts](https://docs.zibby.app/concepts/graph) · [Designing agents](https://docs.zibby.app/concepts/designing-agents) · [Cloud](https://docs.zibby.app/cloud/triggering)
+📖 **Full docs:** [docs.teamy.town](https://docs.teamy.town) · [Get Started](https://docs.teamy.town/get-started/install) · [Concepts](https://docs.teamy.town/concepts/graph) · [Designing agents](https://docs.teamy.town/concepts/designing-agents) · [Cloud](https://docs.teamy.town/cloud/triggering)
 
 > **The cloud pipeline for Claude Code, Codex, and Gemini.** Compose them into structured workflows with Zod-validated handoff between nodes. Vendor-neutral, JavaScript-first, runs locally or in our cloud.
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-Each agent reads its own credential env var (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Teamy Cloud** you can set those per-workflow — different keys per pipeline, no global state — see [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Each node runs on the model the run config names for it (`config: { models: { node_id: 'claude-opus-4.6', default: '…' } }`); a node never borrows another node's model.
+Each agent reads its own credential env var (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Teamy Cloud** you can set those per-workflow — different keys per pipeline, no global state — see [Per-workflow env vars](https://docs.teamy.town/cloud/env-vars). Each node runs on the model the run config names for it (`config: { models: { node_id: 'claude-opus-4.6', default: '…' } }`); a node never borrows another node's model.
 
 ---
 
@@ -98,7 +98,7 @@ See [`examples/`](./examples/) for runnable demos of each pattern.
 Run the **full Teamy platform** — platform + agents + marketplace — on your own box:
 
 ```bash
-curl -fsSL https://dl.zibby.app/selfhosted/latest/install.sh | bash
+curl -fsSL https://dl.teamy.town/selfhosted/latest/install.sh | bash
 ```
 
 Requirements: Docker + ~8 GB RAM. The installer downloads the release bundle, `docker load`s the images locally (**no registry login needed**), generates secrets, brings the stack up, and prints your dashboard URL + access token. Free tier: up to 10 deployed agents.
@@ -224,7 +224,7 @@ This is synchronous-only metadata; async dispatch already returns `jobId`.
 
 **Same `/trigger` endpoint as user-initiated runs.** The engine POSTs to `/projects/<id>/workflows/<child-name>/trigger` with `parentExecutionId` set. The server's input gate, quota check, and execution accounting all apply identically — a parent that fans out 10 children consumes 11 executions.
 
-**Full reference:** [docs.zibby.app/concepts/sub-graphs](https://docs.zibby.app/concepts/sub-graphs)
+**Full reference:** [docs.teamy.town/concepts/sub-graphs](https://docs.teamy.town/concepts/sub-graphs)
 
 ---
 

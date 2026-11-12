@@ -7,7 +7,7 @@
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | 中文
 
-📖 **完整文档：** [docs.zibby.app](https://docs.zibby.app) · [Get Started](https://docs.zibby.app/get-started/install) · [Concepts](https://docs.zibby.app/concepts/graph) · [CLI Reference](https://docs.zibby.app/cli-reference) · [Cloud](https://docs.zibby.app/cloud/triggering)
+📖 **完整文档：** [docs.teamy.town](https://docs.teamy.town) · [Get Started](https://docs.teamy.town/get-started/install) · [Concepts](https://docs.teamy.town/concepts/graph) · [CLI Reference](https://docs.teamy.town/cli-reference) · [Cloud](https://docs.teamy.town/cloud/triggering)
 
 > **面向 Claude Code、Codex 和 Gemini 的云端流水线。** 将它们组合成结构化的工作流，节点之间通过 Zod 校验的 handoff 进行交接。供应商中立、JavaScript 优先，可在本地或我们的云中运行。
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-每个代理读取自己的凭证环境变量（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）。在 **Teamy Cloud** 中，你可以按工作流分别设置这些变量——每条流水线使用不同的密钥，没有全局状态——参见 [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars)。各节点的 `model` 覆盖来自 `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`），CLI 会将其作为部署包的一部分发送到云端。
+每个代理读取自己的凭证环境变量（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）。在 **Teamy Cloud** 中，你可以按工作流分别设置这些变量——每条流水线使用不同的密钥，没有全局状态——参见 [Per-workflow env vars](https://docs.teamy.town/cloud/env-vars)。各节点的 `model` 覆盖来自 `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`），CLI 会将其作为部署包的一部分发送到云端。
 
 ---
 
@@ -151,7 +151,7 @@ g.addNode('audit', {
 
 **与用户发起的运行使用同一个 `/trigger` 端点。** 引擎会向 `/projects/<id>/workflows/<child-name>/trigger` 发起 POST，并设置 `parentExecutionId`。服务器的输入校验门、配额检查和执行计费完全一致地适用——一个扇出到 10 个子项的父级会消耗 11 次执行。
 
-**完整参考：** [docs.zibby.app/concepts/sub-graphs](https://docs.zibby.app/concepts/sub-graphs)
+**完整参考：** [docs.teamy.town/concepts/sub-graphs](https://docs.teamy.town/concepts/sub-graphs)
 
 ---
 

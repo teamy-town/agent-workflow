@@ -7,7 +7,7 @@
 
 [English](../README.md) | Deutsch | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [中文](./README.zh.md)
 
-📖 **Vollständige Dokumentation:** [docs.zibby.app](https://docs.zibby.app) · [Get Started](https://docs.zibby.app/get-started/install) · [Concepts](https://docs.zibby.app/concepts/graph) · [CLI Reference](https://docs.zibby.app/cli-reference) · [Cloud](https://docs.zibby.app/cloud/triggering)
+📖 **Vollständige Dokumentation:** [docs.teamy.town](https://docs.teamy.town) · [Get Started](https://docs.teamy.town/get-started/install) · [Concepts](https://docs.teamy.town/concepts/graph) · [CLI Reference](https://docs.teamy.town/cli-reference) · [Cloud](https://docs.teamy.town/cloud/triggering)
 
 > **Die Cloud-Pipeline für Claude Code, Codex und Gemini.** Setze sie zu strukturierten Workflows zusammen, mit Zod-validierter Übergabe (Handoff) zwischen den Nodes. Anbieterneutral, JavaScript-first, läuft lokal oder in unserer Cloud.
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-Jeder Agent liest seine eigene Credential-Umgebungsvariable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Teamy Cloud** kannst du diese pro Workflow setzen — unterschiedliche Keys pro Pipeline, kein globaler State — siehe [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Per-Node-`model`-Overrides kommen aus `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), das die CLI als Teil des Deploy-Bundles in die Cloud mitliefert.
+Jeder Agent liest seine eigene Credential-Umgebungsvariable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). In **Teamy Cloud** kannst du diese pro Workflow setzen — unterschiedliche Keys pro Pipeline, kein globaler State — siehe [Per-workflow env vars](https://docs.teamy.town/cloud/env-vars). Per-Node-`model`-Overrides kommen aus `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), das die CLI als Teil des Deploy-Bundles in die Cloud mitliefert.
 
 ---
 
@@ -151,7 +151,7 @@ g.addNode('audit', {
 
 **Derselbe `/trigger`-Endpunkt wie bei vom Benutzer ausgelösten Läufen.** Die Engine schickt ein POST an `/projects/<id>/workflows/<child-name>/trigger` mit gesetztem `parentExecutionId`. Das Input-Gate des Servers, die Quota-Prüfung und die Ausführungsabrechnung gelten alle identisch — ein Parent, der 10 Children auffächert, verbraucht 11 Ausführungen.
 
-**Vollständige Referenz:** [docs.zibby.app/concepts/sub-graphs](https://docs.zibby.app/concepts/sub-graphs)
+**Vollständige Referenz:** [docs.teamy.town/concepts/sub-graphs](https://docs.teamy.town/concepts/sub-graphs)
 
 ---
 

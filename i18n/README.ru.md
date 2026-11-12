@@ -7,7 +7,7 @@
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | Русский | [中文](./README.zh.md)
 
-📖 **Полная документация:** [docs.zibby.app](https://docs.zibby.app) · [Get Started](https://docs.zibby.app/get-started/install) · [Concepts](https://docs.zibby.app/concepts/graph) · [CLI Reference](https://docs.zibby.app/cli-reference) · [Cloud](https://docs.zibby.app/cloud/triggering)
+📖 **Полная документация:** [docs.teamy.town](https://docs.teamy.town) · [Get Started](https://docs.teamy.town/get-started/install) · [Concepts](https://docs.teamy.town/concepts/graph) · [CLI Reference](https://docs.teamy.town/cli-reference) · [Cloud](https://docs.teamy.town/cloud/triggering)
 
 > **Облачный конвейер для Claude Code, Codex и Gemini.** Объединяйте их в структурированные рабочие процессы с проверяемой через Zod передачей данных (handoff) между узлами. Независимый от поставщика, ориентированный на JavaScript, работает локально или в нашем облаке.
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-Каждый агент читает собственную переменную окружения с учётными данными (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). В **Teamy Cloud** их можно задавать для каждого рабочего процесса — разные ключи для разных конвейеров, без глобального состояния — см. [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). Переопределения `model` для отдельных узлов берутся из `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), который CLI отправляет в облако в составе пакета развёртывания.
+Каждый агент читает собственную переменную окружения с учётными данными (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). В **Teamy Cloud** их можно задавать для каждого рабочего процесса — разные ключи для разных конвейеров, без глобального состояния — см. [Per-workflow env vars](https://docs.teamy.town/cloud/env-vars). Переопределения `model` для отдельных узлов берутся из `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), который CLI отправляет в облако в составе пакета развёртывания.
 
 ---
 
@@ -151,7 +151,7 @@ g.addNode('audit', {
 
 **Та же конечная точка `/trigger`, что и у запусков, инициированных пользователем.** Движок выполняет POST на `/projects/<id>/workflows/<child-name>/trigger` с установленным `parentExecutionId`. Входной шлюз сервера, проверка квоты и учёт выполнений применяются одинаково — родитель, который разветвляется на 10 дочерних, потребляет 11 выполнений.
 
-**Полный справочник:** [docs.zibby.app/concepts/sub-graphs](https://docs.zibby.app/concepts/sub-graphs)
+**Полный справочник:** [docs.teamy.town/concepts/sub-graphs](https://docs.teamy.town/concepts/sub-graphs)
 
 ---
 

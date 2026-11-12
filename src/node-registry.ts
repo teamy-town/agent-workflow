@@ -2,7 +2,7 @@
  * Node-type implementation registry.
  *
  * Lives on globalThis so it's SHARED across module instances. In a multi-
- * package workspace (or a deployed workflow bundle), `@zibby/agent-workflow`
+ * package workspace (or a deployed workflow bundle), `@teamy.town/agent-workflow`
  * can be loaded twice when consumer pin ranges don't intersect. Each ESM
  * instance has its own module scope, so a module-local `const registry =
  * new Map()` would mean SEPARATE registries — registering a node type

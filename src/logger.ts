@@ -6,7 +6,7 @@
  * or pass { debug, info, warn, error } backed by console.
  *
  * @example
- * import { setLogger } from '@zibby/workflow';
+ * import { setLogger } from '@teamy.town/agent-workflow';
  * setLogger({ debug: () => {}, info: console.log, warn: console.warn, error: console.error });
  *
  * ── Why the state hangs off globalThis ────────────────────────────────

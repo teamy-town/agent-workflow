@@ -9,7 +9,7 @@
  *
  * The registry lives on globalThis so it's SHARED across module instances.
  * In a multi-package workspace (or a deployed workflow bundle),
- * `@zibby/agent-workflow` can be loaded twice when consumer pin ranges
+ * `@teamy.town/agent-workflow` can be loaded twice when consumer pin ranges
  * don't intersect — e.g. `@zibby/skills` pinning `^0.1.x` while
  * `@zibby/core` pins `^0.2.x`. Each ESM instance has its own module scope,
  * so a module-level `const _registry = new Map()` would mean SEPARATE

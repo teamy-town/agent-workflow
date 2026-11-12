@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a problem with @zibby/agent-workflow
+about: Report a problem with @teamy.town/agent-workflow
 title: ''
 labels: bug
 ---
@@ -19,7 +19,7 @@ Smallest possible code that reproduces the issue (link to a gist or paste here):
 What you expected to happen.
 
 **Environment**
-- `@zibby/agent-workflow` version:
+- `@teamy.town/agent-workflow` version:
 - Node.js version (`node --version`):
 - OS:
 

@@ -7,7 +7,7 @@
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | 한국어 | [Português](./README.pt.md) | [Русский](./README.ru.md) | [中文](./README.zh.md)
 
-📖 **전체 문서:** [docs.zibby.app](https://docs.zibby.app) · [Get Started](https://docs.zibby.app/get-started/install) · [Concepts](https://docs.zibby.app/concepts/graph) · [CLI Reference](https://docs.zibby.app/cli-reference) · [Cloud](https://docs.zibby.app/cloud/triggering)
+📖 **전체 문서:** [docs.teamy.town](https://docs.teamy.town) · [Get Started](https://docs.teamy.town/get-started/install) · [Concepts](https://docs.teamy.town/concepts/graph) · [CLI Reference](https://docs.teamy.town/cli-reference) · [Cloud](https://docs.teamy.town/cloud/triggering)
 
 > **Claude Code, Codex, Gemini를 위한 클라우드 파이프라인.** 노드 간에 Zod로 검증되는 핸드오프를 갖춘 구조화된 워크플로로 이들을 조합하세요. 벤더 중립적이며, JavaScript 우선이고, 로컬에서도 당사 클라우드에서도 실행됩니다.
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-각 에이전트는 자신의 자격 증명 환경 변수(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`)를 읽습니다. **Teamy Cloud**에서는 이들을 워크플로별로 설정할 수 있습니다 — 파이프라인마다 다른 키, 전역 상태 없음 — [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars)를 참고하세요. 노드별 `model` 재정의는 `.zibby.config.mjs`(`models: { node_id: 'claude-opus-4.6' }`)에서 가져오며, CLI가 배포 번들의 일부로 클라우드에 전달합니다.
+각 에이전트는 자신의 자격 증명 환경 변수(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`)를 읽습니다. **Teamy Cloud**에서는 이들을 워크플로별로 설정할 수 있습니다 — 파이프라인마다 다른 키, 전역 상태 없음 — [Per-workflow env vars](https://docs.teamy.town/cloud/env-vars)를 참고하세요. 노드별 `model` 재정의는 `.zibby.config.mjs`(`models: { node_id: 'claude-opus-4.6' }`)에서 가져오며, CLI가 배포 번들의 일부로 클라우드에 전달합니다.
 
 ---
 
@@ -151,7 +151,7 @@ g.addNode('audit', {
 
 **사용자가 시작한 실행과 동일한 `/trigger` 엔드포인트.** 엔진은 `parentExecutionId`를 설정하여 `/projects/<id>/workflows/<child-name>/trigger`에 POST합니다. 서버의 입력 게이트, 쿼터 확인, 실행 회계는 모두 동일하게 적용됩니다 — 10개의 자식으로 팬아웃하는 부모는 11회의 실행을 소비합니다.
 
-**전체 레퍼런스:** [docs.zibby.app/concepts/sub-graphs](https://docs.zibby.app/concepts/sub-graphs)
+**전체 레퍼런스:** [docs.teamy.town/concepts/sub-graphs](https://docs.teamy.town/concepts/sub-graphs)
 
 ---
 

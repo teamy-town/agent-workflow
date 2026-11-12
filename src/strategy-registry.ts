@@ -5,7 +5,7 @@
  * No built-in strategies are bundled — register your own via registerStrategy().
  *
  * @example
- * import { registerStrategy, invokeAgent } from '@zibby/workflow';
+ * import { registerStrategy, invokeAgent } from '@teamy.town/agent-workflow';
  * import { MyClaudeStrategy } from './my-claude-strategy.js';
  *
  * registerStrategy(new MyClaudeStrategy());
@@ -23,8 +23,8 @@ import { unavailableToolsBlock } from './unavailable-tools.js';
 import { placeStandingPrompt, STANDING_PROMPT } from './standing-prompt.js';
 
 // The registry lives on globalThis so it's SHARED across module instances.
-// In a workflow bundle, @zibby/agent-workflow can be loaded multiple times
-// (e.g., once via `import '@zibby/agent-workflow'` from the workflow's
+// In a workflow bundle, @teamy.town/agent-workflow can be loaded multiple times
+// (e.g., once via `import '@teamy.town/agent-workflow'` from the workflow's
 // graph.mjs and again via @zibby/core's transitive import). Each ESM
 // module instance has its own scope, so a module-level `const _strategies
 // = []` would give us SEPARATE arrays per instance and registrations made
@@ -40,7 +40,7 @@ const _strategies = globalThis[REGISTRY_KEY];
  * Register an agent strategy. Re-registering by name replaces the existing entry.
  *
  * IMPORTANT: this is a duck-type check, NOT `instanceof AgentStrategy`. With
- * dual-package scenarios (multiple copies of @zibby/agent-workflow loaded),
+ * dual-package scenarios (multiple copies of @teamy.town/agent-workflow loaded),
  * `instanceof` would compare against THIS module's AgentStrategy class while
  * the strategy was constructed in ANOTHER module's class — same shape, but
  * not the same identity, so instanceof fails. Duck-typing avoids that trap.

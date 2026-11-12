@@ -7,7 +7,7 @@
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | [日本語](./README.ja.md) | [한국어](./README.ko.md) | Português | [Русский](./README.ru.md) | [中文](./README.zh.md)
 
-📖 **Documentação completa:** [docs.zibby.app](https://docs.zibby.app) · [Get Started](https://docs.zibby.app/get-started/install) · [Concepts](https://docs.zibby.app/concepts/graph) · [CLI Reference](https://docs.zibby.app/cli-reference) · [Cloud](https://docs.zibby.app/cloud/triggering)
+📖 **Documentação completa:** [docs.teamy.town](https://docs.teamy.town) · [Get Started](https://docs.teamy.town/get-started/install) · [Concepts](https://docs.teamy.town/concepts/graph) · [CLI Reference](https://docs.teamy.town/cli-reference) · [Cloud](https://docs.teamy.town/cloud/triggering)
 
 > **O pipeline na nuvem para Claude Code, Codex e Gemini.** Componha-os em fluxos de trabalho estruturados com repasse (handoff) validado por Zod entre nós. Neutro em relação ao fornecedor, com foco em JavaScript, executa localmente ou em nossa nuvem.
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-Cada agente lê sua própria variável de ambiente de credencial (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). No **Teamy Cloud** você pode configurá-las por fluxo de trabalho — chaves diferentes por pipeline, sem estado global — veja [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars). As substituições de `model` por nó vêm de `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), que a CLI envia para a nuvem como parte do pacote de implantação.
+Cada agente lê sua própria variável de ambiente de credencial (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). No **Teamy Cloud** você pode configurá-las por fluxo de trabalho — chaves diferentes por pipeline, sem estado global — veja [Per-workflow env vars](https://docs.teamy.town/cloud/env-vars). As substituições de `model` por nó vêm de `.zibby.config.mjs` (`models: { node_id: 'claude-opus-4.6' }`), que a CLI envia para a nuvem como parte do pacote de implantação.
 
 ---
 
@@ -151,7 +151,7 @@ g.addNode('audit', {
 
 **O mesmo endpoint `/trigger` que as execuções iniciadas pelo usuário.** O motor faz POST para `/projects/<id>/workflows/<child-name>/trigger` com `parentExecutionId` definido. A comporta de entrada do servidor, a verificação de cota e a contabilidade de execuções se aplicam de forma idêntica — um pai que distribui 10 filhos consome 11 execuções.
 
-**Referência completa:** [docs.zibby.app/concepts/sub-graphs](https://docs.zibby.app/concepts/sub-graphs)
+**Referência completa:** [docs.teamy.town/concepts/sub-graphs](https://docs.teamy.town/concepts/sub-graphs)
 
 ---
 

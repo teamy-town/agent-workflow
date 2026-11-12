@@ -7,7 +7,7 @@
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | [français](./README.fr.md) | 日本語 | [한국어](./README.ko.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [中文](./README.zh.md)
 
-📖 **完全なドキュメント:** [docs.zibby.app](https://docs.zibby.app) · [Get Started](https://docs.zibby.app/get-started/install) · [Concepts](https://docs.zibby.app/concepts/graph) · [CLI Reference](https://docs.zibby.app/cli-reference) · [Cloud](https://docs.zibby.app/cloud/triggering)
+📖 **完全なドキュメント:** [docs.teamy.town](https://docs.teamy.town) · [Get Started](https://docs.teamy.town/get-started/install) · [Concepts](https://docs.teamy.town/concepts/graph) · [CLI Reference](https://docs.teamy.town/cli-reference) · [Cloud](https://docs.teamy.town/cloud/triggering)
 
 > **Claude Code、Codex、Gemini のためのクラウドパイプライン。** ノード間で Zod により検証されるハンドオフを備えた構造化ワークフローへとそれらを組み合わせます。ベンダー中立、JavaScript ファースト、ローカルでも当社のクラウドでも動作します。
 
@@ -31,7 +31,7 @@ graph
   .addNode('verify',    { prompt, outputSchema: Result, agent: 'gemini' });
 ```
 
-各エージェントは自身の認証情報の環境変数（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）を読み取ります。**Teamy Cloud** では、それらをワークフローごとに設定できます — パイプラインごとに異なるキー、グローバルな状態なし — [Per-workflow env vars](https://docs.zibby.app/cloud/env-vars) を参照してください。ノードごとの `model` のオーバーライドは `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`）から取得され、CLI がデプロイバンドルの一部としてクラウドへ送出します。
+各エージェントは自身の認証情報の環境変数（`ANTHROPIC_API_KEY`、`OPENAI_API_KEY`）を読み取ります。**Teamy Cloud** では、それらをワークフローごとに設定できます — パイプラインごとに異なるキー、グローバルな状態なし — [Per-workflow env vars](https://docs.teamy.town/cloud/env-vars) を参照してください。ノードごとの `model` のオーバーライドは `.zibby.config.mjs`（`models: { node_id: 'claude-opus-4.6' }`）から取得され、CLI がデプロイバンドルの一部としてクラウドへ送出します。
 
 ---
 
@@ -151,7 +151,7 @@ g.addNode('audit', {
 
 **ユーザー起点の実行と同じ `/trigger` エンドポイント。** エンジンは `parentExecutionId` を設定して `/projects/<id>/workflows/<child-name>/trigger` に POST します。サーバーの入力ゲート、クォータチェック、実行の計上はすべて同一に適用されます — 10 個の子にファンアウトする親は 11 回分の実行を消費します。
 
-**完全なリファレンス:** [docs.zibby.app/concepts/sub-graphs](https://docs.zibby.app/concepts/sub-graphs)
+**完全なリファレンス:** [docs.teamy.town/concepts/sub-graphs](https://docs.teamy.town/concepts/sub-graphs)
 
 ---
 

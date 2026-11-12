@@ -22,7 +22,7 @@
  * (`unansweredLineNote`) are both built from it.
  *
  * THE LEDGER LIVES ON globalThis (`Symbol.for`), not in this module: the run
- * container loads @zibby/agent-workflow and @zibby/core more than once (the
+ * container loads @teamy.town/agent-workflow and @zibby/core more than once (the
  * CLI's copy and the workflow bundle's), and the writer (the CLI's pump) and a
  * reader (the bundle's invokeAgent) are different copies. Same reason as core's
  * active-runtime and agent-activity slots. A copy too old to have this module
