@@ -267,16 +267,6 @@ You're not replacing the agent. You're giving it a job description, a contract, 
 
 ---
 
-## Companion packages
-
-| Package | What it adds |
-|---|---|
-| [`@zibby/skills`](https://www.npmjs.com/package/@zibby/skills) | Pre-built skills (browser via Playwright MCP, GitHub, Jira, Slack, memory). |
-
-Workflow itself ships **zero agent strategies and zero skills** — bring your own, or `npm install @zibby/skills` for pre-built skills.
-
----
-
 ## Status
 
 `0.1.x`. The public protocol surface is stable and consumed by Teamy Studio + tooling:
