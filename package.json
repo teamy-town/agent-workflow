@@ -1,5 +1,5 @@
 {
-  "name": "@teamy/agent-workflow",
+  "name": "@teamy.town/agent-workflow",
   "version": "2.0.29",
   "description": "Graph-based AI agent workflow orchestration. Bring your own agent strategies.",
   "type": "module",

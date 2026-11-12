@@ -9,7 +9,7 @@
  * Run: `node index.js --reject`  — review rejects, loops back
  */
 
-import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy.town/agent-workflow';
 import { z } from 'zod';
 
 const reject = process.argv.includes('--reject');

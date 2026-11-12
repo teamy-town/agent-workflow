@@ -5,7 +5,7 @@
  * Run: `node index.js`
  */
 
-import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy.town/agent-workflow';
 import { z } from 'zod';
 
 // ── 1. Bring your own agent ──────────────────────────────────────────────

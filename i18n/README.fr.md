@@ -1,8 +1,8 @@
-# @teamy/agent-workflow — français
+# @teamy.town/agent-workflow — français
 
-[![npm version](https://img.shields.io/npm/v/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
+[![npm version](https://img.shields.io/npm/v/@teamy.town/agent-workflow.svg)](https://www.npmjs.com/package/@teamy.town/agent-workflow)
 [![CI](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/teamy-town/agent-workflow/actions/workflows/ci.yml)
-[![Types](https://img.shields.io/npm/types/@teamy/agent-workflow.svg)](https://www.npmjs.com/package/@teamy/agent-workflow)
+[![Types](https://img.shields.io/npm/types/@teamy.town/agent-workflow.svg)](https://www.npmjs.com/package/@teamy.town/agent-workflow)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 
 [English](../README.md) | [Deutsch](./README.de.md) | [Español](./README.es.md) | français | [日本語](./README.ja.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [Русский](./README.ru.md) | [中文](./README.zh.md)
@@ -40,11 +40,11 @@ Chaque agent lit sa propre variable d'environnement d'identifiants (`ANTHROPIC_A
 Si vous ne voulez pas de la CLI, passez directement en JavaScript :
 
 ```bash
-npm install @teamy/agent-workflow
+npm install @teamy.town/agent-workflow
 ```
 
 ```js
-import { Graph, AgentStrategy, registerStrategy } from '@teamy/agent-workflow';
+import { Graph, AgentStrategy, registerStrategy } from '@teamy.town/agent-workflow';
 import { z } from 'zod';
 
 class MyAgent extends AgentStrategy {

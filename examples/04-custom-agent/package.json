@@ -7,7 +7,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@teamy/agent-workflow": "^2.0.29",
+    "@teamy.town/agent-workflow": "^2.0.29",
     "zod": "^3.23.0"
   }
 }

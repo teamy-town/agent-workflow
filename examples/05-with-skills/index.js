@@ -17,7 +17,7 @@ import {
   registerStrategy,
   registerSkill,
   resolveNodeTools,
-} from '@teamy/agent-workflow';
+} from '@teamy.town/agent-workflow';
 import { z } from 'zod';
 
 // 1. Register a skill. In production this would point at a real MCP server

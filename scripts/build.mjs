@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Minimal esbuild build for @teamy/agent-workflow.
+ * Minimal esbuild build for @teamy.town/agent-workflow.
  *
  * Walks src/, emits one bundled .js per source file to dist/, externalising
  * runtime deps so consumers' node_modules wins. Types are emitted in a
