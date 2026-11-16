@@ -52,7 +52,12 @@ function makeWrapWriter(orig, state) {
       return orig(chunk, encoding, callback);
     }
 
-    const cols = process.stdout.columns || 120;
+    // Soft-wrap only for a terminal, at its real width. When stdout is a pipe
+    // or a file there is no screen to fit, and a hard break inside a long line
+    // turns one line into several for whoever reads the output line by line:
+    // a structured record split across lines can no longer be recognised as
+    // one, and its pieces surface as fragments.
+    const cols = process.stdout.isTTY && process.stdout.columns > PIPE_VISUAL_WIDTH ? process.stdout.columns : 0;
     let out = '';
 
     for (let i = 0; i < chunk.length; i++) {
@@ -80,7 +85,7 @@ function makeWrapWriter(orig, state) {
       } else {
         state.col++;
         out += ch;
-        if (state.col >= cols) {
+        if (cols && state.col >= cols) {
           out += `\n${  PIPE_PREFIX}`;
           state.col = PIPE_VISUAL_WIDTH;
         }
