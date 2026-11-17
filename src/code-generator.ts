@@ -40,6 +40,15 @@ export function generateWorkflowCode(config, meta: any = {}) {
   return lines.filter(Boolean).join('\n');
 }
 
+/**
+ * The file a generated workflow reads its node configs from, beside graph.mjs.
+ * Whatever writes those configs next to generated code (generateNodeConfigsJson's
+ * output) names the file with this, so the two cannot drift apart.
+ */
+export function workflowConfigFileName(workflowType = 'workflow') {
+  return `workflow-${workflowType || 'workflow'}.config.json`;
+}
+
 export function generateNodeConfigsJson(nodeConfigs) {
   const cleaned: any = {};
   for (const [nodeId, config] of (Object.entries(nodeConfigs) as [string, any][])) {
@@ -90,7 +99,7 @@ function generateConfigLoader(workflowType) {
     `// ── Node Configs ─────────────────────────────────────────────────────`,
     `const __filename = fileURLToPath(import.meta.url);`,
     `const __dirname = dirname(__filename);`,
-    `const configPath = join(__dirname, 'workflow-${workflowType}.config.json');`,
+    `const configPath = join(__dirname, ${JSON.stringify(workflowConfigFileName(workflowType))});`,
     `const nodeConfigs = existsSync(configPath) ? JSON.parse(readFileSync(configPath, 'utf-8')) : {};`,
     '',
     `// Every generated node is code: it returns { success, output, raw } itself. A`,

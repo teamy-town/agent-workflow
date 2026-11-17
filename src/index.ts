@@ -140,7 +140,7 @@ export { REPOSITORY_RULE_FILES, WORKSPACE_RULE_FILES, RULE_FILE_MAX_BYTES, RULES
 export type { RuleFile, RuleLocation, RuleRoot, PreparedWorkspace, RulesPlan } from './repository-rules.js';
 
 // Code generation (compile graph config to runnable JS)
-export { generateWorkflowCode, generateNodeConfigsJson } from './code-generator.js';
+export { generateWorkflowCode, generateNodeConfigsJson, workflowConfigFileName } from './code-generator.js';
 
 // Logger customization
 export { setLogger } from './logger.js';

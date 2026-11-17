@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { generateWorkflowCode } from '../code-generator.js';
+import { generateWorkflowCode, workflowConfigFileName } from '../code-generator.js';
 
 const manifest = JSON.parse(await import('node:fs').then((fs) => fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')));
 const engineEntry = fileURLToPath(new URL('../index.ts', import.meta.url));
@@ -15,7 +15,7 @@ afterAll(() => rmSync(dir, { recursive: true, force: true }));
 async function load(name: string, config: any, nodeConfigs: any = {}) {
   const source = generateWorkflowCode(config, { workflowType: name });
   expect(source).toContain(`from '${manifest.name}'`);
-  writeFileSync(join(dir, `workflow-${name}.config.json`), JSON.stringify(nodeConfigs));
+  writeFileSync(join(dir, workflowConfigFileName(name)), JSON.stringify(nodeConfigs));
   const file = join(dir, `${name}.mjs`);
   writeFileSync(file, source.replace(`'${manifest.name}'`, JSON.stringify(pathToFileURL(engineEntry).href)));
   return import(pathToFileURL(file).href);
@@ -42,6 +42,11 @@ describe('generated workflows build and run', () => {
     const result = await mod.buildGraph().run(null, {});
     expect(result.success).not.toBe(false);
     expect(JSON.stringify(result)).toContain('"seen":1');
+  });
+
+  it('a generated workflow reads the node configs written beside it under workflowConfigFileName', async () => {
+    const mod = await load('configured', { nodes: [{ id: 'start', type: 'custom' }], edges: [] }, { start: { marker: 'seen' } });
+    expect(mod.nodeConfigs).toEqual({ start: { marker: 'seen' } });
   });
 
   it('a registered factory node type is built from its id and config', async () => {
