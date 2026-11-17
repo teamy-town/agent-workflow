@@ -1,5 +1,5 @@
 import { NODE_DEFAULT_TOOLS } from './tool-resolver.js';
-import { getNodeTemplate } from './node-registry.js';
+import { getNodeTemplate, getNodeImpl } from './node-registry.js';
 
 export function generateWorkflowCode(config, meta: any = {}) {
   const { nodes, edges, nodeConfigs = {} } = config;
@@ -35,7 +35,7 @@ export function generateWorkflowCode(config, meta: any = {}) {
   lines.push(generateToolDeclarations(toolIdsByVar));
   lines.push(generateConfigLoader(workflowType));
   lines.push(generateNodeFunctions(executableNodes, nodeConfigs));
-  lines.push(generateBuildFunction(executableNodes, entryNode, simpleEdges, conditionalEdges, toolsPerNode, workflowType));
+  lines.push(generateBuildFunction(executableNodes, entryNode, simpleEdges, conditionalEdges, toolsPerNode, workflowType, nodeConfigs));
 
   return lines.filter(Boolean).join('\n');
 }
@@ -93,6 +93,11 @@ function generateConfigLoader(workflowType) {
     `const configPath = join(__dirname, 'workflow-${workflowType}.config.json');`,
     `const nodeConfigs = existsSync(configPath) ? JSON.parse(readFileSync(configPath, 'utf-8')) : {};`,
     '',
+    `// Every generated node is code: it returns { success, output, raw } itself. A`,
+    `// schema configured for the node (nodeConfigs[id].outputSchema) checks its output.`,
+    `const outputSchemaOf = (id) => nodeConfigs[id]?.outputSchema?.jsonSchema || nodeConfigs[id]?.outputSchema || null;`,
+    `const codeNode = (id, execute) => ({ name: id, _isCustomCode: true, outputSchema: outputSchemaOf(id), execute });`,
+    '',
   ].join('\n');
 }
 
@@ -108,7 +113,11 @@ function generateNodeFunctions(executableNodes, nodeConfigs) {
       lines.push(`const ${varName}_execute = ${customCode};`);
     } else {
       const template = getNodeTemplate(node.nodeType);
-      if (template) {
+      if (template && getNodeImpl(node.nodeType)?.factory) {
+        // A factory type builds the node from its id and config.
+        lines.push(`// Default "${node.nodeType}" implementation`);
+        lines.push(`const ${varName}_create = ${template};`);
+      } else if (template) {
         lines.push(`// Default "${node.nodeType}" implementation`);
         lines.push(`const ${varName}_execute = ${template};`);
       } else {
@@ -122,14 +131,17 @@ function generateNodeFunctions(executableNodes, nodeConfigs) {
   return lines.join('\n');
 }
 
-function generateBuildFunction(executableNodes, entryNode, simpleEdges, conditionalEdges, toolsPerNode, _workflowType) {
+function generateBuildFunction(executableNodes, entryNode, simpleEdges, conditionalEdges, toolsPerNode, _workflowType, nodeConfigs = {}) {
   const lines = [`// ── Graph Builder ────────────────────────────────────────────────────`];
   lines.push(`export function buildGraph(options = {}) {`);
   lines.push(`  const graph = new WorkflowGraph(options);`, '');
   lines.push(`  // Nodes`);
   for (const node of executableNodes) {
     const varName = sanitizeVarName(node.id);
-    lines.push(`  graph.addNode('${node.id}', { name: '${node.id}', execute: ${varName}_execute });`);
+    const factory = !nodeConfigs[node.id]?.customCode && getNodeTemplate(node.nodeType) && getNodeImpl(node.nodeType)?.factory;
+    lines.push(factory
+      ? `  graph.addNode('${node.id}', { _isCustomCode: true, outputSchema: outputSchemaOf('${node.id}'), ...${varName}_create('${node.id}', nodeConfigs['${node.id}'] || {}), name: '${node.id}' });`
+      : `  graph.addNode('${node.id}', codeNode('${node.id}', ${varName}_execute));`);
     lines.push(`  graph.setNodeType('${node.id}', '${node.nodeType}');`);
   }
   lines.push('', `  graph.setEntryPoint('${entryNode}');`, '');
