@@ -232,11 +232,14 @@ function resolvedDispatch(executionId, finalState, output, includeExecutionMetad
  *   it from process-global environment or query the execution list.
  *
  * @returns {Promise<any>}
- *   async: `{ jobId, status: 'accepted' }`
+ *   async: `{ jobId, status: 'accepted' }`, or `{ jobId: null, status: 'coalesced',
+ *          runningExecutionId, messageId?, message? }` when the child allows one run at a
+ *          time and the start went to its running run
  *   sync : the child's final state (or `getPath(state, output)`), optionally
  *          wrapped as `{ executionId, output }`
  *
  * @throws {Error}
+ *   - `code: 'SUBGRAPH_COALESCED'` (sync only): the start went to the child's running run
  *   - Network / 5xx errors from the trigger endpoint
  *   - 400 if the child's stateSchema rejects the input
  *   - Sub-graph reached a non-success terminal status (failed/canceled/timeout)
@@ -558,6 +561,29 @@ export async function dispatchSubgraph(workflowName, options: any = {}) {
     throw e;
   }
   const jobId = triggerJson?.data?.jobId || triggerJson?.jobId;
+
+  // The child allows one run at a time and one is working: the platform handed
+  // this start to that run as a message instead of starting a second one.
+  const answer = triggerJson?.data || triggerJson;
+  if (!jobId && answer?.status === 'coalesced' && typeof answer.runningExecutionId === 'string' && answer.runningExecutionId) {
+    const delivered = {
+      jobId: null,
+      status: 'coalesced',
+      workflow: workflowName,
+      runningExecutionId: answer.runningExecutionId,
+      ...(typeof answer.messageId === 'string' && answer.messageId ? { messageId: answer.messageId } : {}),
+      ...(typeof answer.message === 'string' && answer.message ? { message: answer.message } : {}),
+    };
+    if (options.async) {
+      logger.info(`[sub-graph] '${workflowName}' is already running (${answer.runningExecutionId}); the start was delivered to that run`);
+      return delivered;
+    }
+    const e: any = new Error(`Sub-graph '${workflowName}' started no new run: its running run ${answer.runningExecutionId} took this start as a message, so there is no child to wait for.`);
+    e.code = 'SUBGRAPH_COALESCED';
+    e.subgraph = workflowName;
+    Object.assign(e, delivered);
+    throw e;
+  }
 
   if (!jobId) {
     throw new Error(`Sub-graph '${workflowName}' trigger returned no jobId: ${JSON.stringify(triggerJson).slice(0, 200)}`);
