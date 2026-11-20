@@ -128,11 +128,11 @@ export function runInContext(ctx, fn) {
     // named by the begin answer, else the surrounding scope's. Unset = the
     // process env (a container run's own EFFORT_CEILING). See currentEffortCeiling.
     effortCeiling: typeof ctx.effortCeiling === 'string' && ctx.effortCeiling ? ctx.effortCeiling : (parent.effortCeiling ?? null),
-    // The rule files the person turned OFF for this agent (its Settings), for
-    // an in-process child: named by the begin answer (an empty list included —
-    // the parent's process env must not answer for the child), else the
-    // surrounding scope's. See currentRuleFilesOff.
-    ruleFilesOff: Array.isArray(ctx.ruleFilesOff) ? ctx.ruleFilesOff.slice() : (parent.ruleFilesOff ?? null),
+    // Values the HOST scopes to an in-process child (its begin answer's
+    // `hostScope`): each key the child names is its own, the rest are the
+    // surrounding scope's. See currentHostScope.
+    hostScope: ctx.hostScope && typeof ctx.hostScope === 'object' && !Array.isArray(ctx.hostScope)
+      ? Object.freeze({ ...(parent.hostScope || {}), ...ctx.hostScope }) : (parent.hostScope ?? null),
     // agent/signal are the live run objects; inherit the parent's unless the
     // caller overrides — so a child scope keeps seeing an agent/signal for its
     // own dispatchSubgraph calls (see withAgentContext).
@@ -221,23 +221,10 @@ export function currentEffortCeiling(): string | null {
   return process.env.EFFORT_CEILING || null;
 }
 
-/**
- * The name the platform stamps the agent's turned-off rule files under on a
- * container run: a JSON array of absolute paths, as the agent's Settings list
- * them (repository-rules.ts reads it).
- */
-export const RULE_FILES_OFF_ENV = 'RULE_FILES_OFF';
-
-/**
- * The rule files the person turned OFF for the agent this run belongs to —
- * the in-process child scope's list when its begin answer named one, else the
- * `RULE_FILES_OFF` env the platform stamps on a container run. Raw (an array
- * or the env's JSON text, or null); repository-rules parseRuleFilesOff reads it.
- */
-export function currentRuleFilesOff(env: Record<string, string | undefined> = process.env): unknown {
+/** What the host scoped to the in-process child this code runs in (runInContext `hostScope`); null outside one. */
+export function currentHostScope(): Readonly<Record<string, unknown>> | null {
   const store: any = _als.getStore();
-  if (store && Array.isArray(store.ruleFilesOff)) return store.ruleFilesOff;
-  return env ? (env[RULE_FILES_OFF_ENV] ?? null) : null;
+  return store && store.hostScope && typeof store.hostScope === 'object' ? store.hostScope : null;
 }
 
 export function currentRunEffort(): string | null {

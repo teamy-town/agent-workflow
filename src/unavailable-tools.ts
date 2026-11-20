@@ -34,7 +34,7 @@
  * throws): this is a fact for the agent, it can never break a node.
  */
 import { getExecContext } from './exec-context.js';
-import { maskCredentials } from './repository-rules.js';
+import { maskCredentials } from './mask-credentials.js';
 
 const SLOT = Symbol.for('agent.unavailableToolsForRun');
 

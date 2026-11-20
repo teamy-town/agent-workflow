@@ -779,10 +779,9 @@ export async function runInProcessSubgraph(workflowName, options: any = {}) {
           // The CHILD agent's effort ceiling (its person's setting), from the
           // begin answer — never the parent's process env.
           ...(typeof begin.effortCeiling === 'string' && begin.effortCeiling ? { effortCeiling: begin.effortCeiling } : {}),
-          // The CHILD agent's turned-off rule files (its person's setting), from
-          // the begin answer — an empty list included, so the parent's process
-          // env never answers for the child (repository-rules parseRuleFilesOff).
-          ...(Array.isArray(begin.ruleFilesOff) ? { ruleFilesOff: begin.ruleFilesOff } : {}),
+          // What the host scopes to the child (its begin answer), read by host
+          // code through currentHostScope — never the parent's process env.
+          ...(begin.hostScope && typeof begin.hostScope === 'object' && !Array.isArray(begin.hostScope) ? { hostScope: begin.hostScope } : {}),
         },
         () => childGraph.run(options.parentAgent, childInitialState, {
           signal: deadline.signal,

@@ -15,8 +15,8 @@
 import { AgentStrategy } from './agents/base.js';
 import { logger } from './logger.js';
 import { getSkill, skillEnabledForAgent, skillPromptText, searchedSkillIds, withEveryModelStepSkills } from './skill-registry.js';
-import { currentRunEffort, currentEffortCeiling, currentRuleFilesOff } from './exec-context.js';
-import { repositoryRulesPlanAsync, preparedFoldersBlock, parseRuleFilesOff } from './repository-rules.js';
+import { currentRunEffort, currentEffortCeiling } from './exec-context.js';
+import { hostFactsFor } from './host-facts.js';
 import { runDeadlineSentence } from './run-deadline.js';
 import { unansweredLinesBlock } from './unanswered-lines.js';
 import { unavailableToolsBlock } from './unavailable-tools.js';
@@ -638,26 +638,12 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
   const unavailableTools = unavailableToolsBlock(options.nodeName);
   if (unavailableTools) add('unavailable tools', `\n\n${unavailableTools}`);
 
-  // THE RUN'S PROJECT FOLDERS AND THEIR ACCESS — a standing fact for every
-  // model node of a run that was handed folders, read from the manifest the
-  // runner mounted from; '' when it prepared none (repository-rules.ts
-  // preparedFoldersBlock; @zibby/core's invokeAgent appends the same).
-  const preparedFolders = preparedFoldersBlock();
-  if (preparedFolders) add('project folders', `\n\n${preparedFolders}`);
-
-  // NO INSTRUCTION FILES ARE HANDED OUT: no "# Repository
-  // rules" section, in full or by name. A rule file the agent's setting leaves
-  // on is in the run's copy of its folder for the agent to find like any file;
-  // one turned off is not there (the host
-  // decides both). Only this is still decided here: a node engine that would
-  // load a turned-off file by itself (codex: AGENTS.md) loads none of its own
-  // (`skipNativeRuleFiles`). Nothing turned off, or an engine that loads none
-  // by itself: no folder is walked.
-  const rules = strategy?.skipsNativeRuleFiles === true && parseRuleFilesOff(currentRuleFilesOff()).size
-    ? await repositoryRulesPlanAsync({ workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots })
-    : { parts: [], skipNativeRuleFiles: false, leftOut: [] as string[] };
-  if (rules.leftOut.length) logger.info(`[workflow] rule files turned off in this agent's settings, left out: ${rules.leftOut.join(', ')}`);
-  if (rules.skipNativeRuleFiles) finalOptions.skipNativeRuleFiles = true;
+  // WHAT THE HOST KNOWS ABOUT THIS RUN (host-facts.ts): its parts, in order,
+  // and the options it sets for this call; nothing when no host registered one.
+  const host = await hostFactsFor({ nodeName: options.nodeName, workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots });
+  for (const p of host.parts) add(p.key, `\n\n${p.text}`);
+  for (const line of host.log) logger.info(`[workflow] ${line}`);
+  Object.assign(finalOptions, host.options);
 
   // WHEN THIS RUN IS STOPPED — one sentence, every model node, every vendor
   // (run-deadline.ts; core's invokeAgent appends the same). '' when the run has
