@@ -370,6 +370,10 @@ export class Node {
           // the selected strategy decides what to do with it (the Codex
           // strategy installs them into CODEX_HOME; claude/gemini ignore it).
           plugins: this.config.plugins || [],
+          // The conversation this node keeps and continues; its own name when
+          // unset. Two nodes that are one conversation declare the same key.
+          ...(typeof this.config.sessionKey === 'string' && this.config.sessionKey.trim()
+            ? { sessionKey: this.config.sessionKey.trim() } : {}),
           sessionPath,
           config: zibbyConfig,
           nodeName: this.name,
