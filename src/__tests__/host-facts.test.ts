@@ -55,6 +55,20 @@ describe('host facts', () => {
     expect(sys.prompt.startsWith('turn')).toBe(true);
   });
 
+  it('lead text is the system prompt of a strategy that takes one even when the node has no standing text, the same for every call', async () => {
+    const sys: any = {};
+    registerStrategy({ name: 'host-facts-lead-only', getName: () => 'host-facts-lead-only', canHandle: () => true, takesSystemPrompt: true,
+      invoke: async (prompt: string, opts: any) => { sys.prompt = prompt; sys.opts = opts; return 'ok'; } } as any);
+    registerHostFacts(async () => ({ lead: [{ key: 'rules', text: 'RULES' }], parts: [{ key: 'where', text: 'FACT' }] }));
+    await invokeAgent('first task', { state: { agentType: 'host-facts-lead-only' } }, { model: 'm' });
+    const first = sys.opts.systemPrompt;
+    await invokeAgent('second, other task', { state: { agentType: 'host-facts-lead-only' } }, { model: 'm' });
+    expect(first).toBe('RULES\n\n');
+    expect(sys.opts.systemPrompt).toBe(first);
+    expect(sys.prompt).toBe('second, other task\n\nFACT');
+    expect(sys.opts.promptParts.map((p: any) => p.key)).not.toContain('rules');
+  });
+
   it('refuses a provider that is not a function', () => {
     expect(() => registerHostFacts({} as any)).toThrow(/expects a function/);
   });

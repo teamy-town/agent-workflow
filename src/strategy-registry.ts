@@ -502,11 +502,11 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
   // hold — @zibby/core native-session.js). The node's own parts come first:
   // its `promptParts` when they are exactly its prompt, else the prompt whole.
   let enrichedPrompt: any = typeof prompt === 'string' ? '' : prompt;
-  const parts: { key: string; text: string }[] = [];
-  const add = (key: string, text: string) => {
+  const parts: { key: string; text: string; lead?: boolean }[] = [];
+  const add = (key: string, text: string, lead = false) => {
     let k = key;
     for (let n = 2; parts.some((p) => p.key === k); n++) k = `${key} #${n}`;
-    parts.push({ key: k, text });
+    parts.push(lead ? { key: k, text, lead } : { key: k, text });
     enrichedPrompt += text;
   };
   if (typeof prompt === 'string') {
@@ -514,17 +514,19 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
       && options.promptParts.every((p: any) => p && typeof p.key === 'string' && p.key && typeof p.text === 'string')
       && options.promptParts.map((p: any) => p.text).join('') === prompt
       ? options.promptParts : [{ key: 'node', text: prompt }];
-    for (const p of nodeParts) add(p.key, p.text);
+    for (const p of nodeParts) add(p.key, p.text, p.lead === true);
   }
 
   // THE NODE'S STANDING TEXT (standing-prompt.ts): handed over apart from this
   // call's text, it is joined by the declared skills' pages below and placed by
-  // placeStandingPrompt at the end. Absent → every part goes to the prompt, as before.
+  // placeStandingPrompt at the end. The pages are standing text whenever the
+  // node has some or the strategy takes a system prompt; else they follow the call's text.
   const standing: { key: string; text: string }[] = [];
   const standingText = typeof (options as any)[STANDING_PROMPT] === 'string' ? (options as any)[STANDING_PROMPT] : '';
   if (standingText.trim()) standing.push({ key: 'node standing text', text: standingText });
+  const standingOpen = standing.length > 0 || (strategy?.takesSystemPrompt === true && typeof prompt === 'string');
   const addStandingOrPrompt = (key: string, text: string) => {
-    if (!standing.length) return add(key, text);
+    if (!standingOpen) return add(key, text);
     let k = key;
     for (let n = 2; standing.some((p) => p.key === k); n++) k = `${key} #${n}`;
     standing.push({ key: k, text });
@@ -642,16 +644,9 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
   // and the options it sets for this call; nothing when no host registered one.
   const host = await hostFactsFor({ nodeName: options.nodeName, workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots, state: stateView });
   for (const p of host.parts) add(p.key, `\n\n${p.text}`);
-  // The host's LEAD text goes first — into the standing text when the node has one (the cached system prompt), else in
+  // The host's LEAD text opens the call (placeStandingPrompt): the system prompt of a strategy that takes one, else the
   // front of the prompt — so every call of the run's agents opens with the same bytes.
-  if (host.lead.length) {
-    const lead = host.lead.map((p) => ({ key: p.key, text: `${p.text}\n\n` }));
-    if (standing.length) standing.unshift(...lead);
-    else if (typeof enrichedPrompt === 'string') {
-      parts.unshift(...lead);
-      enrichedPrompt = parts.map((p) => p.text).join('');
-    }
-  }
+  const lead = host.lead.map((p) => ({ key: p.key, text: `${p.text}\n\n` }));
   for (const line of host.log) logger.info(`[workflow] ${line}`);
   Object.assign(finalOptions, host.options);
 
@@ -677,8 +672,8 @@ ${extraInstructions}
   }
 
   logger.debug(`[workflow] prompt length: ${enrichedPrompt.length} chars`);
-  if (!standing.length) return strategy.invoke(enrichedPrompt, { ...finalOptions, promptParts: parts });
-  const placed = placeStandingPrompt(strategy, standing, parts);
+  if (typeof enrichedPrompt !== 'string' && !standing.length) return strategy.invoke(enrichedPrompt, { ...finalOptions, promptParts: parts });
+  const placed = placeStandingPrompt(strategy, standing, parts, lead);
   const { [STANDING_PROMPT]: _standing, ...callOptions } = finalOptions;
   return strategy.invoke(placed.prompt, {
     ...callOptions,
