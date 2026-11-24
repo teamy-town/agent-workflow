@@ -23,7 +23,7 @@ describe('host facts', () => {
     const seen = capture('host-facts-none');
     await invokeAgent('task', { state: { agentType: 'host-facts-none' } }, { model: 'm' });
     expect(seen.prompt).toBe('task');
-    expect(await hostFactsFor({ strategy: {} })).toEqual({ parts: [], options: {}, log: [] });
+    expect(await hostFactsFor({ strategy: {} })).toEqual({ parts: [], lead: [], options: {}, log: [] });
   });
 
   it('the provider\'s parts follow the node\'s text as named parts, and its options reach the strategy', async () => {
@@ -39,6 +39,20 @@ describe('host facts', () => {
     expect(seen.opts.quiet).toBe(true);
     expect(asked[0]).toMatchObject({ nodeName: 'n', workspace: '/w', repositoryRoots: ['/r'], state: { input: 'x' } });
     expect(asked[0].strategy.getName()).toBe('host-facts-some');
+  });
+
+  it('lead text opens the prompt, ahead of the node\'s text; with standing text it opens the system prompt', async () => {
+    const seen = capture('host-facts-lead');
+    registerHostFacts(async () => ({ lead: [{ key: 'rules', text: 'RULES' }], parts: [{ key: 'where', text: 'FACT' }] }));
+    await invokeAgent('task', { state: { agentType: 'host-facts-lead' } }, { model: 'm' });
+    expect(seen.prompt).toBe('RULES\n\ntask\n\nFACT');
+    expect(seen.opts.promptParts[0]).toEqual({ key: 'rules', text: 'RULES\n\n' });
+    const sys = capture('host-facts-lead-sys');
+    registerStrategy({ name: 'host-facts-lead-sys', getName: () => 'host-facts-lead-sys', canHandle: () => true, takesSystemPrompt: true,
+      invoke: async (prompt: string, opts: any) => { sys.prompt = prompt; sys.opts = opts; return 'ok'; } } as any);
+    await invokeAgent('turn', { state: { agentType: 'host-facts-lead-sys' } }, { model: 'm', standingPrompt: 'WHO' });
+    expect(sys.opts.systemPrompt.startsWith('RULES\n\nWHO')).toBe(true);
+    expect(sys.prompt.startsWith('turn')).toBe(true);
   });
 
   it('refuses a provider that is not a function', () => {

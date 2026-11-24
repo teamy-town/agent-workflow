@@ -23,6 +23,8 @@ export interface HostFactsRequest {
 
 export interface HostFacts {
   parts: Array<{ key: string; text: string }>;
+  /** Text the same on every call of the run's agents, placed FIRST (ahead of the node's own text) so calls share a cached prefix. */
+  lead?: Array<{ key: string; text: string }>;
   options?: Record<string, unknown>;
   log?: string[];
 }
@@ -48,9 +50,11 @@ export function hostFactsProvider(): HostFactsProvider | null {
 export async function hostFactsFor(request: HostFactsRequest): Promise<Required<HostFacts>> {
   const provider = hostFactsProvider();
   const got: any = provider ? await provider(request) : null;
-  const parts = Array.isArray(got?.parts)
-    ? got.parts.filter((p: any) => p && typeof p.key === 'string' && p.key && typeof p.text === 'string' && p.text) : [];
+  const valid = (list: any) => (Array.isArray(list)
+    ? list.filter((p: any) => p && typeof p.key === 'string' && p.key && typeof p.text === 'string' && p.text) : []);
+  const parts = valid(got?.parts);
+  const lead = valid(got?.lead);
   const options = got?.options && typeof got.options === 'object' ? got.options : {};
   const log = Array.isArray(got?.log) ? got.log.filter((l: any) => typeof l === 'string' && l) : [];
-  return { parts, options, log };
+  return { parts, lead, options, log };
 }

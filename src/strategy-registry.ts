@@ -642,6 +642,16 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
   // and the options it sets for this call; nothing when no host registered one.
   const host = await hostFactsFor({ nodeName: options.nodeName, workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots, state: stateView });
   for (const p of host.parts) add(p.key, `\n\n${p.text}`);
+  // The host's LEAD text goes first — into the standing text when the node has one (the cached system prompt), else in
+  // front of the prompt — so every call of the run's agents opens with the same bytes.
+  if (host.lead.length) {
+    const lead = host.lead.map((p) => ({ key: p.key, text: `${p.text}\n\n` }));
+    if (standing.length) standing.unshift(...lead);
+    else if (typeof enrichedPrompt === 'string') {
+      parts.unshift(...lead);
+      enrichedPrompt = parts.map((p) => p.text).join('');
+    }
+  }
   for (const line of host.log) logger.info(`[workflow] ${line}`);
   Object.assign(finalOptions, host.options);
 
