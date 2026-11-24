@@ -17,6 +17,8 @@ export interface HostFactsRequest {
   strategy: any;
   /** Directories the node named for this call. */
   repositoryRoots?: unknown;
+  /** The run state this call was made with (read-only snapshot). */
+  state?: Readonly<Record<string, unknown>>;
 }
 
 export interface HostFacts {

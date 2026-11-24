@@ -33,11 +33,11 @@ describe('host facts', () => {
       asked.push(request);
       return { parts: [{ key: 'where', text: 'FACT ONE' }, { key: 'empty', text: '' }], options: { quiet: true } };
     });
-    await invokeAgent('task', { state: { agentType: 'host-facts-some' } }, { model: 'm', nodeName: 'n', workspace: '/w', repositoryRoots: ['/r'] });
+    await invokeAgent('task', { state: { agentType: 'host-facts-some', input: 'x' } }, { model: 'm', nodeName: 'n', workspace: '/w', repositoryRoots: ['/r'] });
     expect(seen.prompt).toBe('task\n\nFACT ONE');
     expect(seen.opts.promptParts).toEqual([{ key: 'node', text: 'task' }, { key: 'where', text: '\n\nFACT ONE' }]);
     expect(seen.opts.quiet).toBe(true);
-    expect(asked[0]).toMatchObject({ nodeName: 'n', workspace: '/w', repositoryRoots: ['/r'] });
+    expect(asked[0]).toMatchObject({ nodeName: 'n', workspace: '/w', repositoryRoots: ['/r'], state: { input: 'x' } });
     expect(asked[0].strategy.getName()).toBe('host-facts-some');
   });
 

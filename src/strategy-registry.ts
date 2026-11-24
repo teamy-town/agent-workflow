@@ -640,7 +640,7 @@ export async function invokeAgent(prompt, context: any = {}, options: any = {}) 
 
   // WHAT THE HOST KNOWS ABOUT THIS RUN (host-facts.ts): its parts, in order,
   // and the options it sets for this call; nothing when no host registered one.
-  const host = await hostFactsFor({ nodeName: options.nodeName, workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots });
+  const host = await hostFactsFor({ nodeName: options.nodeName, workspace: finalOptions.workspace, strategy, repositoryRoots: options.repositoryRoots, state: stateView });
   for (const p of host.parts) add(p.key, `\n\n${p.text}`);
   for (const line of host.log) logger.info(`[workflow] ${line}`);
   Object.assign(finalOptions, host.options);
